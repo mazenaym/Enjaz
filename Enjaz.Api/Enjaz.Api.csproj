@@ -1,0 +1,36 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Hangfire.AspNetCore" Version="1.8.23" />
+    <PackageReference Include="Hangfire.PostgreSql" Version="1.21.1" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.8" />
+    <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="10.0.9" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="10.2.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Enjaz.BuildingBlocks\Enjaz.BuildingBlocks.csproj" />
+    <ProjectReference Include="..\Modules\Identity\Enjaz.Identity.Endpoints\Enjaz.Identity.Endpoints.csproj" />
+    <ProjectReference Include="..\Modules\Customers\Enjaz.Customers.Endpoints\Enjaz.Customers.Endpoints.csproj" />
+    <ProjectReference Include="..\Modules\Technicians\Enjaz.Technicians.Endpoints\Enjaz.Technicians.Endpoints.csproj" />
+    <ProjectReference Include="..\Modules\Catalog\Enjaz.Catalog.Endpoints\Enjaz.Catalog.Endpoints.csproj" />
+    <ProjectReference Include="..\Modules\Jobs\Enjaz.Jobs.Endpoints\Enjaz.Jobs.Endpoints.csproj" />
+    <ProjectReference Include="..\Modules\Pricing\Enjaz.Pricing.Endpoints\Enjaz.Pricing.Endpoints.csproj" />
+    <ProjectReference Include="..\Modules\Payments\Enjaz.Payments.Endpoints\Enjaz.Payments.Endpoints.csproj" />
+    <ProjectReference Include="..\Modules\Wallets\Enjaz.Wallets.Endpoints\Enjaz.Wallets.Endpoints.csproj" />
+    <ProjectReference Include="..\Modules\Notifications\Enjaz.Notifications.Endpoints\Enjaz.Notifications.Endpoints.csproj" />
+    <ProjectReference Include="..\Modules\Maps\Enjaz.Maps.Endpoints\Enjaz.Maps.Endpoints.csproj" />
+    <ProjectReference Include="..\Modules\Calls\Enjaz.Calls.Endpoints\Enjaz.Calls.Endpoints.csproj" />
+    <ProjectReference Include="..\Modules\AI\Enjaz.AI.Endpoints\Enjaz.AI.Endpoints.csproj" />
+    <ProjectReference Include="..\Modules\Reviews\Enjaz.Reviews.Endpoints\Enjaz.Reviews.Endpoints.csproj" />
+    <ProjectReference Include="..\Modules\Admin\Enjaz.Admin.Endpoints\Enjaz.Admin.Endpoints.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,15 @@
+.vs/
+bin/
+obj/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+TestResults/
+[Bb]uild/
+[Dd]ebug/
+[Rr]elease/
+
+*.nupkg
+packages/

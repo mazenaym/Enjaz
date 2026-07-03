@@ -1,0 +1,6 @@
+@Enjaz.Api_HostAddress = http://localhost:5261
+
+GET {{Enjaz.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
