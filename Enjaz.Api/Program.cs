@@ -5,6 +5,8 @@ using Enjaz.BuildingBlocks.Exceptions;
 using Enjaz.Catalog.Endpoints;
 using Enjaz.Customers.Endpoints;
 using Enjaz.Identity.Endpoints;
+using Enjaz.Jobs.Endpoints;
+using Enjaz.Jobs.Endpoints.Realtime;
 using Enjaz.Maps.Endpoints;
 using Enjaz.Maps.Endpoints.Realtime;
 using Enjaz.Pricing.Endpoints;
@@ -109,6 +111,7 @@ try
     builder.Services.AddMapsModule(builder.Configuration);
     builder.Services.AddAiModule(builder.Configuration);
     builder.Services.AddPricingModule(builder.Configuration);
+    builder.Services.AddJobsModule(builder.Configuration);
 
     var app = builder.Build();
 
@@ -121,6 +124,7 @@ try
         app.UseSwagger();
         app.UseSwaggerUI();
         app.UseHangfireDashboard("/hangfire");
+        Enjaz.Jobs.Endpoints.DependencyInjection.AddJobsRecurringJobs();
     }
 
     app.UseHttpsRedirection();
@@ -131,6 +135,7 @@ try
     app.MapHealthChecks("/health");
     app.MapHub<SystemHub>("/hubs/system");
     app.MapHub<TrackingHub>("/hubs/tracking");
+    app.MapHub<JobsHub>("/hubs/jobs");
 
     app.Run();
 }
