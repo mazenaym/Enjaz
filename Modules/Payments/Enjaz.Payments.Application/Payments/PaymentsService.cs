@@ -4,6 +4,7 @@ using Enjaz.Jobs.Domain.Jobs;
 using Enjaz.Payments.Domain.Payments;
 using Enjaz.SharedKernel.Auth;
 using Enjaz.SharedKernel.Results;
+using Enjaz.Wallets.Application.Wallets;
 using Microsoft.EntityFrameworkCore;
 
 namespace Enjaz.Payments.Application.Payments;
@@ -13,7 +14,9 @@ public sealed class PaymentsService(
     IPaymentProvider paymentProvider,
     ICurrentUserContext currentUserContext,
     IJobPaymentLookupService jobPaymentLookupService,
-    IJobPaymentStatusService jobPaymentStatusService)
+    IJobPaymentStatusService jobPaymentStatusService,
+    IPaymentLedgerService paymentLedgerService,
+    IRefundLedgerService refundLedgerService)
     : IPaymentsService, IAdminPaymentsService
 {
     public async Task<Result<PaymentCheckoutResponse>> CreateCheckoutAsync(CreateCheckoutRequest request, CancellationToken cancellationToken = default)
@@ -222,11 +225,19 @@ public sealed class PaymentsService(
         var transactionType = status == PaymentStatuses.Succeeded ? PaymentTransactionTypes.PaymentSucceeded : PaymentTransactionTypes.PaymentFailed;
         if (await repository.TransactionExistsAsync(providerTransactionId, transactionType, cancellationToken))
         {
+            if (status == PaymentStatuses.Succeeded)
+            {
+                var ledgerResult = await RecordSuccessfulPaymentLedgerAsync(payment, cancellationToken);
+                if (ledgerResult.IsFailure) return Result.Failure<PaymentDetailsResponse>(ledgerResult.ErrorCode!, ledgerResult.ErrorMessage!);
+            }
+
             return Result.Success(await MapDetailsAsync(payment, cancellationToken));
         }
 
         if (payment.Status == PaymentStatuses.Succeeded && status == PaymentStatuses.Succeeded)
         {
+            var ledgerResult = await RecordSuccessfulPaymentLedgerAsync(payment, cancellationToken);
+            if (ledgerResult.IsFailure) return Result.Failure<PaymentDetailsResponse>(ledgerResult.ErrorCode!, ledgerResult.ErrorMessage!);
             return Result.Success(await MapDetailsAsync(payment, cancellationToken));
         }
 
@@ -242,18 +253,40 @@ public sealed class PaymentsService(
         if (status == PaymentStatuses.Succeeded)
         {
             var jobResult = await jobPaymentStatusService.MarkJobPaidAsync(payment.JobId, payment.Id, null, cancellationToken);
+            RefundRequest? refundRequest = null;
             if (jobResult.IsFailure && jobResult.ErrorCode == "job_cancelled")
             {
-                await repository.AddRefundRequestAsync(new RefundRequest { PaymentId = payment.Id, JobId = payment.JobId, Amount = payment.Amount, Currency = payment.Currency, Reason = "Job was cancelled before payment confirmation", RequestedByUserId = payment.CustomerUserId, CreatedAtUtc = DateTime.UtcNow }, cancellationToken);
+                refundRequest = new RefundRequest { PaymentId = payment.Id, JobId = payment.JobId, Amount = payment.Amount, Currency = payment.Currency, Reason = "Job was cancelled before payment confirmation", RequestedByUserId = payment.CustomerUserId, CreatedAtUtc = DateTime.UtcNow };
+                await repository.AddRefundRequestAsync(refundRequest, cancellationToken);
+            }
+
+            await repository.SaveChangesAsync(cancellationToken);
+            var ledgerResult = await RecordSuccessfulPaymentLedgerAsync(payment, cancellationToken);
+            if (ledgerResult.IsFailure) return Result.Failure<PaymentDetailsResponse>(ledgerResult.ErrorCode!, ledgerResult.ErrorMessage!);
+            if (refundRequest is not null)
+            {
+                var refundLedgerResult = await refundLedgerService.RecordRefundRequestedAsync(refundRequest.Id, payment.Id, payment.JobId, payment.Amount, payment.Currency, refundRequest.Reason, cancellationToken);
+                if (refundLedgerResult.IsFailure) return Result.Failure<PaymentDetailsResponse>(refundLedgerResult.ErrorCode!, refundLedgerResult.ErrorMessage!);
             }
         }
         else
         {
             await jobPaymentStatusService.MarkJobPaymentFailedAsync(payment.JobId, payment.Id, failureReason ?? "Payment failed.", cancellationToken);
+            await repository.SaveChangesAsync(cancellationToken);
         }
-
-        await repository.SaveChangesAsync(cancellationToken);
         return Result.Success(await MapDetailsAsync(payment, cancellationToken));
+    }
+
+    private async Task<Result> RecordSuccessfulPaymentLedgerAsync(Payment payment, CancellationToken cancellationToken)
+    {
+        return await paymentLedgerService.RecordPaymentCapturedAsync(new PaymentCapturedLedgerRequest(
+            payment.Id,
+            payment.JobId,
+            payment.PriceSnapshotId,
+            payment.CustomerUserId,
+            payment.Amount,
+            payment.Currency,
+            payment.PaidAtUtc ?? DateTime.UtcNow), cancellationToken);
     }
 
     private async Task<PaymentDetailsResponse> MapDetailsAsync(Payment payment, CancellationToken cancellationToken)

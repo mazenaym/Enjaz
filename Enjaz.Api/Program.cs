@@ -12,6 +12,7 @@ using Enjaz.Maps.Endpoints.Realtime;
 using Enjaz.Payments.Endpoints;
 using Enjaz.Pricing.Endpoints;
 using Enjaz.Technicians.Endpoints;
+using Enjaz.Wallets.Endpoints;
 using FluentValidation.AspNetCore;
 using Hangfire;
 using Hangfire.PostgreSql;
@@ -113,6 +114,7 @@ try
     builder.Services.AddAiModule(builder.Configuration);
     builder.Services.AddPricingModule(builder.Configuration);
     builder.Services.AddJobsModule(builder.Configuration);
+    builder.Services.AddWalletsModule(builder.Configuration);
     builder.Services.AddPaymentsModule(builder.Configuration);
 
     var app = builder.Build();
@@ -127,6 +129,7 @@ try
         app.UseSwaggerUI();
         app.UseHangfireDashboard("/hangfire");
         Enjaz.Jobs.Endpoints.DependencyInjection.AddJobsRecurringJobs();
+        Enjaz.Wallets.Endpoints.DependencyInjection.AddWalletsRecurringJobs();
     }
 
     app.UseHttpsRedirection();

@@ -1,6 +1,7 @@
 using Enjaz.Jobs.Application.Jobs;
 using Enjaz.Jobs.Infrastructure.Jobs;
 using Enjaz.Jobs.Infrastructure.Persistence;
+using Enjaz.Wallets.Application.Wallets;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,6 +20,7 @@ public static class DependencyInjection
         services.AddScoped<ICustomerLookupService, CustomerLookupService>();
         services.AddScoped<IPricingSnapshotLookupService, PricingSnapshotLookupService>();
         services.AddScoped<IServiceZoneLookupService, ServiceZoneLookupService>();
+        services.AddScoped<IJobWalletLookupService, JobWalletLookupService>();
 
         return services;
     }

@@ -87,7 +87,7 @@ public interface IJobPaymentStatusService
 
 public sealed record CustomerProfileLookupResult(Guid Id, Guid UserId);
 public sealed record CustomerAddressLocationResult(decimal? Latitude, decimal? Longitude);
-public sealed record PriceSnapshotLookupResult(Guid Id, Guid? UserId, Guid ServiceCategoryId, Guid ServiceId, int ComplexityId, decimal TotalAmount, decimal DepositAmount, string Currency, bool RequiresInspection, DateTime? ExpiresAtUtc);
+public sealed record PriceSnapshotLookupResult(Guid Id, Guid? UserId, Guid ServiceCategoryId, Guid ServiceId, int ComplexityId, decimal BasePrice, decimal CommissionRate, decimal CommissionAmount, decimal VatRate, decimal VatAmount, decimal TotalAmount, decimal TechnicianPayoutAmount, decimal DepositAmount, string Currency, bool RequiresInspection, DateTime? ExpiresAtUtc);
 public sealed record ServiceZoneCoverageResult(bool IsCovered, Guid? ServiceZoneId);
 public sealed record JobEventMessage(string EventName, Guid JobId, Guid? CustomerUserId = null, Guid? TechnicianUserId = null, string? Status = null);
 public sealed record JobPaymentLookupResult(Guid JobId, string JobNumber, Guid CustomerUserId, Guid PriceSnapshotId, string Status, decimal EstimatedTotalAmount, decimal EstimatedDepositAmount, string Currency, bool RequiresInspection);

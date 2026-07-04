@@ -22,6 +22,7 @@
     <ProjectReference Include="..\..\Customers\Enjaz.Customers.Infrastructure\Enjaz.Customers.Infrastructure.csproj" />
     <ProjectReference Include="..\..\Maps\Enjaz.Maps.Application\Enjaz.Maps.Application.csproj" />
     <ProjectReference Include="..\..\Pricing\Enjaz.Pricing.Infrastructure\Enjaz.Pricing.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\Wallets\Enjaz.Wallets.Application\Enjaz.Wallets.Application.csproj" />
   </ItemGroup>
 
 </Project>
