@@ -21,6 +21,8 @@ public static class JobStatusTransitionPolicy
         {
             (JobStatuses.WaitingForPayment, JobStatuses.Cancelled) => true,
             (JobStatuses.WaitingForPayment, JobStatuses.TechnicianAssigned) => actorRole == JobNoteAuthorRoles.Admin,
+            (JobStatuses.WaitingForPayment, JobStatuses.Paid) => actorRole is JobNoteAuthorRoles.System or JobNoteAuthorRoles.Admin,
+            (JobStatuses.Paid, JobStatuses.SearchingTechnician) => actorRole is JobNoteAuthorRoles.System or JobNoteAuthorRoles.Admin,
             (JobStatuses.PendingInspectionPricing, JobStatuses.Cancelled) => true,
             (JobStatuses.PendingInspectionPricing, JobStatuses.WaitingForPayment) => actorRole == JobNoteAuthorRoles.Admin,
             (JobStatuses.TechnicianAssigned, JobStatuses.TechnicianAccepted) => true,

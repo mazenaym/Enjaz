@@ -1,6 +1,16 @@
-﻿namespace Enjaz.Payments.Endpoints;
+using Enjaz.Payments.Application;
+using Enjaz.Payments.Infrastructure;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 
-public class DependencyInjection
+namespace Enjaz.Payments.Endpoints;
+
+public static class DependencyInjection
 {
-
+    public static IServiceCollection AddPaymentsModule(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddPaymentsApplication();
+        services.AddPaymentsInfrastructure(configuration);
+        return services;
+    }
 }

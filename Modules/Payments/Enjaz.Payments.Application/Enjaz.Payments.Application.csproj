@@ -2,7 +2,14 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Enjaz.Payments.Domain\Enjaz.Payments.Domain.csproj" />
+    <ProjectReference Include="..\..\Jobs\Enjaz.Jobs.Application\Enjaz.Jobs.Application.csproj" />
     <ProjectReference Include="..\..\..\Enjaz.SharedKernel\Enjaz.SharedKernel.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.9" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.9" />
   </ItemGroup>
 
   <PropertyGroup>

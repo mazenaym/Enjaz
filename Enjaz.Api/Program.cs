@@ -9,6 +9,7 @@ using Enjaz.Jobs.Endpoints;
 using Enjaz.Jobs.Endpoints.Realtime;
 using Enjaz.Maps.Endpoints;
 using Enjaz.Maps.Endpoints.Realtime;
+using Enjaz.Payments.Endpoints;
 using Enjaz.Pricing.Endpoints;
 using Enjaz.Technicians.Endpoints;
 using FluentValidation.AspNetCore;
@@ -112,6 +113,7 @@ try
     builder.Services.AddAiModule(builder.Configuration);
     builder.Services.AddPricingModule(builder.Configuration);
     builder.Services.AddJobsModule(builder.Configuration);
+    builder.Services.AddPaymentsModule(builder.Configuration);
 
     var app = builder.Build();
 

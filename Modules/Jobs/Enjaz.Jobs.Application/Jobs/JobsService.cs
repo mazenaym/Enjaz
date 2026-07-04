@@ -14,7 +14,7 @@ public sealed class JobsService(
     IServiceZoneLookupService serviceZoneLookupService,
     ITechnicianLookupService technicianLookupService,
     IJobsEventPublisher eventPublisher)
-    : ICustomerJobsService, IAdminJobsService, ITechnicianJobsService
+    : ICustomerJobsService, IAdminJobsService, ITechnicianJobsService, IJobPaymentLookupService, IJobPaymentStatusService
 {
     public async Task<Result<JobCreateResponse>> CreateAsync(CreateJobRequest request, CancellationToken cancellationToken = default)
     {
@@ -307,6 +307,68 @@ public sealed class JobsService(
         await repository.SaveChangesAsync(cancellationToken);
         await eventPublisher.PublishAsync(new JobEventMessage("job.assignment.rejected", job.Id, job.CustomerUserId, assignment.TechnicianUserId, job.Status), cancellationToken);
         return Result.Success(await MapDetailsAsync(job, includeInternal: false, includeAssignments: true, cancellationToken));
+    }
+
+    public async Task<JobPaymentLookupResult?> GetPayableJobAsync(Guid jobId, Guid customerUserId, CancellationToken cancellationToken = default)
+    {
+        var job = await repository.GetJobAsync(jobId, cancellationToken);
+        if (job is null || job.CustomerUserId != customerUserId || job.Status != JobStatuses.WaitingForPayment || job.RequiresInspection)
+        {
+            return null;
+        }
+
+        return new JobPaymentLookupResult(job.Id, job.JobNumber, job.CustomerUserId, job.PriceSnapshotId, job.Status, job.EstimatedTotalAmount, job.EstimatedDepositAmount, job.Currency, job.RequiresInspection);
+    }
+
+    public async Task<Result> MarkJobPaidAsync(Guid jobId, Guid paymentId, Guid? changedByUserId, CancellationToken cancellationToken = default)
+    {
+        var job = await repository.GetJobAsync(jobId, cancellationToken);
+        if (job is null)
+        {
+            return Result.Failure("job_not_found", "Job was not found.");
+        }
+
+        if (job.Status == JobStatuses.Cancelled)
+        {
+            await repository.AddNoteAsync(new JobNote { JobId = job.Id, AuthorUserId = changedByUserId ?? Guid.Empty, AuthorRole = JobNoteAuthorRoles.System, NoteType = JobNoteTypes.Pricing, Text = $"Payment {paymentId} succeeded after cancellation. Refund review required.", IsInternal = true, CreatedAtUtc = DateTime.UtcNow }, cancellationToken);
+            await repository.SaveChangesAsync(cancellationToken);
+            return Result.Failure("job_cancelled", "Job was cancelled before payment confirmation.");
+        }
+
+        if (job.Status != JobStatuses.WaitingForPayment && job.Status != JobStatuses.Paid && job.Status != JobStatuses.SearchingTechnician)
+        {
+            return Result.Failure("job_not_payable", "Job cannot be marked paid from its current status.");
+        }
+
+        if (job.Status == JobStatuses.WaitingForPayment)
+        {
+            await ChangeStatusAsync(job, JobStatuses.Paid, changedByUserId, $"Payment {paymentId} succeeded.", cancellationToken);
+        }
+
+        if (job.Status == JobStatuses.Paid)
+        {
+            await ChangeStatusAsync(job, JobStatuses.SearchingTechnician, changedByUserId, "Payment complete. Searching for technician.", cancellationToken);
+        }
+
+        await repository.AddNoteAsync(new JobNote { JobId = job.Id, AuthorUserId = changedByUserId ?? Guid.Empty, AuthorRole = JobNoteAuthorRoles.System, NoteType = JobNoteTypes.Pricing, Text = $"Payment {paymentId} succeeded.", IsInternal = true, CreatedAtUtc = DateTime.UtcNow }, cancellationToken);
+        await repository.SaveChangesAsync(cancellationToken);
+        await eventPublisher.PublishAsync(new JobEventMessage("job.payment.succeeded", job.Id, job.CustomerUserId, job.AssignedTechnicianUserId, job.Status), cancellationToken);
+        await eventPublisher.PublishAsync(new JobEventMessage("job.status.changed", job.Id, job.CustomerUserId, job.AssignedTechnicianUserId, job.Status), cancellationToken);
+        return Result.Success();
+    }
+
+    public async Task<Result> MarkJobPaymentFailedAsync(Guid jobId, Guid paymentId, string reason, CancellationToken cancellationToken = default)
+    {
+        var job = await repository.GetJobAsync(jobId, cancellationToken);
+        if (job is null)
+        {
+            return Result.Failure("job_not_found", "Job was not found.");
+        }
+
+        await repository.AddNoteAsync(new JobNote { JobId = job.Id, AuthorUserId = Guid.Empty, AuthorRole = JobNoteAuthorRoles.System, NoteType = JobNoteTypes.Pricing, Text = $"Payment {paymentId} failed: {reason}", IsInternal = true, CreatedAtUtc = DateTime.UtcNow }, cancellationToken);
+        await repository.SaveChangesAsync(cancellationToken);
+        await eventPublisher.PublishAsync(new JobEventMessage("job.payment.failed", job.Id, job.CustomerUserId, job.AssignedTechnicianUserId, job.Status), cancellationToken);
+        return Result.Success();
     }
 
     private async Task ChangeStatusAsync(Job job, string toStatus, Guid? changedByUserId, string? reason, CancellationToken cancellationToken)

@@ -74,8 +74,20 @@ public interface IExpireTechnicianAssignmentJob
     Task ExecuteAsync(CancellationToken cancellationToken = default);
 }
 
+public interface IJobPaymentLookupService
+{
+    Task<JobPaymentLookupResult?> GetPayableJobAsync(Guid jobId, Guid customerUserId, CancellationToken cancellationToken = default);
+}
+
+public interface IJobPaymentStatusService
+{
+    Task<Result> MarkJobPaidAsync(Guid jobId, Guid paymentId, Guid? changedByUserId, CancellationToken cancellationToken = default);
+    Task<Result> MarkJobPaymentFailedAsync(Guid jobId, Guid paymentId, string reason, CancellationToken cancellationToken = default);
+}
+
 public sealed record CustomerProfileLookupResult(Guid Id, Guid UserId);
 public sealed record CustomerAddressLocationResult(decimal? Latitude, decimal? Longitude);
 public sealed record PriceSnapshotLookupResult(Guid Id, Guid? UserId, Guid ServiceCategoryId, Guid ServiceId, int ComplexityId, decimal TotalAmount, decimal DepositAmount, string Currency, bool RequiresInspection, DateTime? ExpiresAtUtc);
 public sealed record ServiceZoneCoverageResult(bool IsCovered, Guid? ServiceZoneId);
 public sealed record JobEventMessage(string EventName, Guid JobId, Guid? CustomerUserId = null, Guid? TechnicianUserId = null, string? Status = null);
+public sealed record JobPaymentLookupResult(Guid JobId, string JobNumber, Guid CustomerUserId, Guid PriceSnapshotId, string Status, decimal EstimatedTotalAmount, decimal EstimatedDepositAmount, string Currency, bool RequiresInspection);
