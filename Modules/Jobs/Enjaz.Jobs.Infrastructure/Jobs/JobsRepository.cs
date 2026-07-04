@@ -80,6 +80,16 @@ public sealed class JobsRepository(JobsDbContext dbContext) : IJobsRepository
             .ToArrayAsync(cancellationToken);
     }
 
+    public async Task<bool> OperationAlertExistsAsync(Guid jobId, string alertType, CancellationToken cancellationToken = default)
+    {
+        return await dbContext.JobOperationAlerts.AnyAsync(alert => alert.JobId == jobId && alert.AlertType == alertType && !alert.IsResolved, cancellationToken);
+    }
+
+    public async Task AddOperationAlertAsync(JobOperationAlert alert, CancellationToken cancellationToken = default)
+    {
+        await dbContext.JobOperationAlerts.AddAsync(alert, cancellationToken);
+    }
+
     public async Task<string> GenerateJobNumberAsync(DateTime nowUtc, CancellationToken cancellationToken = default)
     {
         var yearMonth = nowUtc.ToString("yyyyMM");

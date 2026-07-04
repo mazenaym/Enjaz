@@ -33,6 +33,21 @@ public sealed class TechnicianLookupService(TechniciansDbContext dbContext) : IT
             .FirstOrDefaultAsync(cancellationToken);
     }
 
+    public async Task<TechnicianPublicLookupResult?> GetPublicProfileAsync(Guid technicianId, CancellationToken cancellationToken = default)
+    {
+        return await dbContext.TechnicianProfiles
+            .AsNoTracking()
+            .Where(profile => profile.Id == technicianId)
+            .Select(profile => new TechnicianPublicLookupResult(
+                profile.Id,
+                profile.UserId,
+                profile.FullName,
+                profile.ProfileImageUrl,
+                profile.AverageRating,
+                profile.TotalReviews))
+            .FirstOrDefaultAsync(cancellationToken);
+    }
+
     public async Task<bool> IsApprovedAsync(Guid technicianId, CancellationToken cancellationToken = default)
     {
         return await dbContext.TechnicianProfiles

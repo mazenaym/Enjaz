@@ -7,7 +7,7 @@ using Npgsql;
 
 namespace Enjaz.Maps.Infrastructure.Maps;
 
-public sealed class MapsRepository(MapsDbContext dbContext, IConfiguration configuration) : IMapsRepository
+public sealed class MapsRepository(MapsDbContext dbContext, IConfiguration configuration) : IMapsRepository, ITechnicianLocationLookupService
 {
     private readonly string connectionString = configuration.GetConnectionString("DefaultConnection")
         ?? throw new InvalidOperationException("Connection string 'DefaultConnection' is not configured.");
@@ -56,6 +56,15 @@ public sealed class MapsRepository(MapsDbContext dbContext, IConfiguration confi
     public async Task<TechnicianLocationSnapshot?> GetTechnicianLocationSnapshotAsync(Guid technicianId, CancellationToken cancellationToken = default)
     {
         return await dbContext.TechnicianLocationSnapshots.FirstOrDefaultAsync(snapshot => snapshot.TechnicianId == technicianId, cancellationToken);
+    }
+
+    public async Task<TechnicianLocationLookupResponse?> GetLatestLocationAsync(Guid technicianId, CancellationToken cancellationToken = default)
+    {
+        return await dbContext.TechnicianLocationSnapshots
+            .AsNoTracking()
+            .Where(snapshot => snapshot.TechnicianId == technicianId)
+            .Select(snapshot => new TechnicianLocationLookupResponse(snapshot.TechnicianId, snapshot.Latitude, snapshot.Longitude, snapshot.UpdatedAtUtc))
+            .FirstOrDefaultAsync(cancellationToken);
     }
 
     public async Task AddTechnicianLocationSnapshotAsync(TechnicianLocationSnapshot snapshot, CancellationToken cancellationToken = default)

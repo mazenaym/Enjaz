@@ -29,10 +29,21 @@ public interface IMapsRepository
     Task SaveChangesAsync(CancellationToken cancellationToken = default);
 }
 
+public interface ITechnicianLocationLookupService
+{
+    Task<TechnicianLocationLookupResponse?> GetLatestLocationAsync(Guid technicianId, CancellationToken cancellationToken = default);
+}
+
+public interface IJobExecutionLookupService
+{
+    Task<TechnicianActiveJobLookupResult?> GetActiveJobForTechnicianAsync(Guid technicianId, CancellationToken cancellationToken = default);
+}
+
 public interface ITechnicianLookupService
 {
     Task<TechnicianLookupResult?> GetByUserIdAsync(Guid userId, CancellationToken cancellationToken = default);
     Task<TechnicianLookupResult?> GetByTechnicianIdAsync(Guid technicianId, CancellationToken cancellationToken = default);
+    Task<TechnicianPublicLookupResult?> GetPublicProfileAsync(Guid technicianId, CancellationToken cancellationToken = default);
     Task<bool> IsApprovedAsync(Guid technicianId, CancellationToken cancellationToken = default);
     Task<bool> IsOnlineAsync(Guid technicianId, CancellationToken cancellationToken = default);
     Task<bool> HasSkillAsync(Guid technicianId, Guid serviceId, CancellationToken cancellationToken = default);

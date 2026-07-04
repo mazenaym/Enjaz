@@ -11,6 +11,7 @@ public sealed class JobsDbContext(DbContextOptions<JobsDbContext> options) : DbC
     public DbSet<JobNote> JobNotes => Set<JobNote>();
     public DbSet<JobAssignment> JobAssignments => Set<JobAssignment>();
     public DbSet<JobCounter> JobCounters => Set<JobCounter>();
+    public DbSet<JobOperationAlert> JobOperationAlerts => Set<JobOperationAlert>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

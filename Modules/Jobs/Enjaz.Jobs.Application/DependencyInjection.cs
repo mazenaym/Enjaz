@@ -11,10 +11,12 @@ public static class DependencyInjection
         services.AddValidatorsFromAssembly(typeof(DependencyInjection).Assembly);
         services.AddScoped<ICustomerJobsService, JobsService>();
         services.AddScoped<IAdminJobsService, JobsService>();
+        services.AddScoped<IAdminOperationsService, JobsService>();
         services.AddScoped<ITechnicianJobsService, JobsService>();
         services.AddScoped<IJobPaymentLookupService, JobsService>();
         services.AddScoped<IJobPaymentStatusService, JobsService>();
         services.AddScoped<IExpireTechnicianAssignmentJob, ExpireTechnicianAssignmentJob>();
+        services.AddScoped<IJobOperationalTimeoutsJob, JobOperationalTimeoutsJob>();
         return services;
     }
 }

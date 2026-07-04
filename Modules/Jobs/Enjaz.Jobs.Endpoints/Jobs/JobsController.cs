@@ -28,6 +28,18 @@ public sealed class JobsController(ICustomerJobsService jobsService) : Controlle
         return ToActionResult(await jobsService.GetMyJobDetailsAsync(id, cancellationToken));
     }
 
+    [HttpGet("{id:guid}/tracking")]
+    public async Task<IActionResult> GetTracking(Guid id, CancellationToken cancellationToken)
+    {
+        return ToActionResult(await jobsService.GetTrackingAsync(id, cancellationToken));
+    }
+
+    [HttpGet("{id:guid}/timeline")]
+    public async Task<IActionResult> GetTimeline(Guid id, CancellationToken cancellationToken)
+    {
+        return ToActionResult(await jobsService.GetTimelineAsync(id, cancellationToken));
+    }
+
     [HttpPost("{id:guid}/cancel")]
     public async Task<IActionResult> Cancel(Guid id, CancelJobRequest request, CancellationToken cancellationToken)
     {

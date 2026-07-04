@@ -30,5 +30,15 @@ public static class DependencyInjection
             "jobs-expire-technician-assignments",
             job => job.ExecuteAsync(CancellationToken.None),
             "*/5 * * * *");
+
+        RecurringJob.AddOrUpdate<IJobOperationalTimeoutsJob>(
+            "jobs-technician-on-way-late",
+            job => job.CheckTechnicianOnWayLateAsync(CancellationToken.None),
+            "*/5 * * * *");
+
+        RecurringJob.AddOrUpdate<IJobOperationalTimeoutsJob>(
+            "jobs-in-progress-too-long",
+            job => job.CheckInProgressTooLongAsync(CancellationToken.None),
+            "*/5 * * * *");
     }
 }

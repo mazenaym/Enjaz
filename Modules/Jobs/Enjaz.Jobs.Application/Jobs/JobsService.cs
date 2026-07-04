@@ -14,10 +14,12 @@ public sealed class JobsService(
     ICustomerLookupService customerLookupService,
     IPricingSnapshotLookupService pricingSnapshotLookupService,
     IServiceZoneLookupService serviceZoneLookupService,
+    ITechnicianLocationLookupService technicianLocationLookupService,
     ITechnicianLookupService technicianLookupService,
+    IJobPaymentSummaryLookupService paymentSummaryLookupService,
     IJobsEventPublisher eventPublisher,
     INotificationService notificationService)
-    : ICustomerJobsService, IAdminJobsService, ITechnicianJobsService, IJobPaymentLookupService, IJobPaymentStatusService
+    : ICustomerJobsService, IAdminJobsService, IAdminOperationsService, ITechnicianJobsService, IJobPaymentLookupService, IJobPaymentStatusService
 {
     public async Task<Result<JobCreateResponse>> CreateAsync(CreateJobRequest request, CancellationToken cancellationToken = default)
     {
@@ -129,12 +131,39 @@ public sealed class JobsService(
         return Result.Success(await MapDetailsAsync(job, includeInternal: false, includeAssignments: false, cancellationToken));
     }
 
+    public async Task<Result<JobTrackingResponse>> GetTrackingAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        var job = await repository.GetJobAsync(id, cancellationToken);
+        if (job is null || job.CustomerUserId != currentUserContext.UserId)
+        {
+            return Result.Failure<JobTrackingResponse>("job_not_found", "Job was not found.");
+        }
+
+        return Result.Success(await MapTrackingAsync(job, cancellationToken));
+    }
+
+    public async Task<Result<JobTimelineResponse>> GetTimelineAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        var job = await repository.GetJobAsync(id, cancellationToken);
+        if (job is null || job.CustomerUserId != currentUserContext.UserId)
+        {
+            return Result.Failure<JobTimelineResponse>("job_not_found", "Job was not found.");
+        }
+
+        return Result.Success(await MapTimelineAsync(job, includeInternal: false, cancellationToken));
+    }
+
     public async Task<Result<JobDetailsResponse>> CancelAsync(Guid id, CancelJobRequest request, CancellationToken cancellationToken = default)
     {
         var job = await repository.GetJobAsync(id, cancellationToken);
         if (job is null || job.CustomerUserId != currentUserContext.UserId)
         {
             return Result.Failure<JobDetailsResponse>("job_not_found", "Job was not found.");
+        }
+
+        if (job.Status is JobStatuses.TechnicianOnWay or JobStatuses.Arrived or JobStatuses.InProgress or JobStatuses.Completed)
+        {
+            return Result.Failure<JobDetailsResponse>("job_cancellation_requires_admin", "This job can no longer be cancelled by the customer.");
         }
 
         var transition = JobStatusTransitionPolicy.CanTransition(job.Status, JobStatuses.Cancelled, JobNoteAuthorRoles.Customer);
@@ -151,6 +180,10 @@ public sealed class JobsService(
         await repository.SaveChangesAsync(cancellationToken);
         await eventPublisher.PublishAsync(new JobEventMessage("job.cancelled", job.Id, job.CustomerUserId, Status: job.Status), cancellationToken);
         await NotifyAsync(job.CustomerUserId, NotificationTypes.JobCancelled, "Job cancelled", "Your job was cancelled.", JobData(job), cancellationToken);
+        if (job.Status is JobStatuses.Cancelled && job.EstimatedDepositAmount > 0)
+        {
+            await NotifyAsync(Guid.Empty, NotificationTypes.General, "Admin intervention required", $"Cancellation after payment may require refund review for job {job.JobNumber}.", JobData(job), cancellationToken);
+        }
         return Result.Success(await MapDetailsAsync(job, includeInternal: false, includeAssignments: false, cancellationToken));
     }
 
@@ -321,6 +354,109 @@ public sealed class JobsService(
         return Result.Success(await MapDetailsAsync(job, includeInternal: false, includeAssignments: true, cancellationToken));
     }
 
+    public async Task<Result<JobDetailsResponse>> StartTripAsync(Guid jobId, CancellationToken cancellationToken = default)
+    {
+        return await ExecuteTechnicianStatusActionAsync(jobId, JobStatuses.TechnicianAccepted, JobStatuses.TechnicianOnWay, "job.technician.onway", "Technician is on the way.", NotificationTypes.JobStatusChanged, cancellationToken);
+    }
+
+    public async Task<Result<JobDetailsResponse>> ArriveAsync(Guid jobId, CancellationToken cancellationToken = default)
+    {
+        return await ExecuteTechnicianStatusActionAsync(jobId, JobStatuses.TechnicianOnWay, JobStatuses.Arrived, "job.technician.arrived", "Technician arrived.", NotificationTypes.JobStatusChanged, cancellationToken);
+    }
+
+    public async Task<Result<JobDetailsResponse>> StartWorkAsync(Guid jobId, CancellationToken cancellationToken = default)
+    {
+        return await ExecuteTechnicianStatusActionAsync(jobId, JobStatuses.Arrived, JobStatuses.InProgress, "job.started", "Work started.", NotificationTypes.JobStatusChanged, cancellationToken);
+    }
+
+    public async Task<Result<JobDetailsResponse>> CompleteAsync(Guid jobId, CompleteJobRequest request, CancellationToken cancellationToken = default)
+    {
+        var job = await repository.GetJobAsync(jobId, cancellationToken);
+        if (job is null || job.AssignedTechnicianUserId != currentUserContext.UserId)
+        {
+            return Result.Failure<JobDetailsResponse>("job_not_found", "Job was not found.");
+        }
+
+        if (job.Status != JobStatuses.InProgress)
+        {
+            return Result.Failure<JobDetailsResponse>("invalid_job_status", "Job must be in progress before completion.");
+        }
+
+        await ChangeStatusAsync(job, JobStatuses.Completed, currentUserContext.UserId, "Technician completed work.", cancellationToken);
+        if (!string.IsNullOrWhiteSpace(request.CompletionNotes))
+        {
+            await repository.AddNoteAsync(new JobNote { JobId = job.Id, AuthorUserId = currentUserContext.UserId, AuthorRole = JobNoteAuthorRoles.Technician, NoteType = JobNoteTypes.General, Text = request.CompletionNotes.Trim(), CreatedAtUtc = DateTime.UtcNow }, cancellationToken);
+        }
+
+        foreach (var media in request.Media ?? Array.Empty<JobMediaRequest>())
+        {
+            await repository.AddMediaAsync(MapMedia(job.Id, currentUserContext.UserId, media, DateTime.UtcNow), cancellationToken);
+        }
+
+        await repository.SaveChangesAsync(cancellationToken);
+        await eventPublisher.PublishAsync(new JobEventMessage("job.completed", job.Id, job.CustomerUserId, job.AssignedTechnicianUserId, job.Status), cancellationToken);
+        await NotifyAsync(job.CustomerUserId, NotificationTypes.JobStatusChanged, "Work completed", "Your job was completed.", JobData(job), cancellationToken);
+        if (job.AssignedTechnicianUserId.HasValue)
+        {
+            await NotifyAsync(job.AssignedTechnicianUserId.Value, NotificationTypes.JobStatusChanged, "Work completed", "You completed the job.", JobData(job), cancellationToken);
+        }
+
+        return Result.Success(await MapDetailsAsync(job, includeInternal: false, includeAssignments: true, cancellationToken));
+    }
+
+    public async Task<Result<IReadOnlyCollection<JobSummaryResponse>>> GetActiveJobsAsync(CancellationToken cancellationToken = default)
+    {
+        var statuses = ActiveOperationsStatuses;
+        var jobs = await repository.QueryJobs().AsNoTracking().Where(job => statuses.Contains(job.Status)).OrderByDescending(job => job.UpdatedAtUtc ?? job.CreatedAtUtc).Select(job => MapSummary(job)).ToArrayAsync(cancellationToken);
+        return Result.Success<IReadOnlyCollection<JobSummaryResponse>>(jobs);
+    }
+
+    public async Task<Result<JobOperationsDetailsResponse>> GetJobOperationsDetailsAsync(Guid jobId, CancellationToken cancellationToken = default)
+    {
+        var job = await repository.GetJobAsync(jobId, cancellationToken);
+        if (job is null) return Result.Failure<JobOperationsDetailsResponse>("job_not_found", "Job was not found.");
+
+        var details = await MapDetailsAsync(job, includeInternal: true, includeAssignments: true, cancellationToken);
+        var technician = job.AssignedTechnicianId.HasValue ? await MapTechnicianAsync(job.AssignedTechnicianId.Value, cancellationToken) : null;
+        var latestLocation = job.AssignedTechnicianId.HasValue ? await MapLocationAsync(job.AssignedTechnicianId.Value, cancellationToken) : null;
+        var payment = await paymentSummaryLookupService.GetPaymentSummaryAsync(job.Id, cancellationToken);
+        var timeline = await MapTimelineAsync(job, includeInternal: true, cancellationToken);
+        return Result.Success(new JobOperationsDetailsResponse(details, technician, latestLocation, payment, timeline));
+    }
+
+    public async Task<Result<JobDetailsResponse>> ForceCompleteAsync(Guid jobId, AdminForceCompleteRequest request, CancellationToken cancellationToken = default)
+    {
+        var job = await repository.GetJobAsync(jobId, cancellationToken);
+        if (job is null) return Result.Failure<JobDetailsResponse>("job_not_found", "Job was not found.");
+        if (job.Status == JobStatuses.Completed) return Result.Success(await MapDetailsAsync(job, includeInternal: true, includeAssignments: true, cancellationToken));
+
+        var transition = JobStatusTransitionPolicy.CanTransition(job.Status, JobStatuses.Completed, JobNoteAuthorRoles.Admin);
+        if (transition.IsFailure) return Result.Failure<JobDetailsResponse>(transition.ErrorCode!, transition.ErrorMessage!);
+
+        await ChangeStatusAsync(job, JobStatuses.Completed, currentUserContext.UserId, request.Reason, cancellationToken);
+        await repository.AddNoteAsync(new JobNote { JobId = job.Id, AuthorUserId = currentUserContext.UserId, AuthorRole = JobNoteAuthorRoles.Admin, NoteType = JobNoteTypes.Internal, Text = request.Reason.Trim(), IsInternal = true, CreatedAtUtc = DateTime.UtcNow }, cancellationToken);
+        await repository.SaveChangesAsync(cancellationToken);
+        await eventPublisher.PublishAsync(new JobEventMessage("job.completed", job.Id, job.CustomerUserId, job.AssignedTechnicianUserId, job.Status), cancellationToken);
+        await NotifyPartiesAsync(job, "Job completed", "Your job was completed by admin confirmation.", cancellationToken);
+        return Result.Success(await MapDetailsAsync(job, includeInternal: true, includeAssignments: true, cancellationToken));
+    }
+
+    public async Task<Result<JobDetailsResponse>> MarkDisputedAsync(Guid jobId, DisputeRequest request, CancellationToken cancellationToken = default)
+    {
+        var job = await repository.GetJobAsync(jobId, cancellationToken);
+        if (job is null) return Result.Failure<JobDetailsResponse>("job_not_found", "Job was not found.");
+
+        var transition = JobStatusTransitionPolicy.CanTransition(job.Status, JobStatuses.Disputed, JobNoteAuthorRoles.Admin);
+        if (transition.IsFailure) return Result.Failure<JobDetailsResponse>(transition.ErrorCode!, transition.ErrorMessage!);
+
+        await ChangeStatusAsync(job, JobStatuses.Disputed, currentUserContext.UserId, request.Reason, cancellationToken);
+        await repository.AddNoteAsync(new JobNote { JobId = job.Id, AuthorUserId = currentUserContext.UserId, AuthorRole = JobNoteAuthorRoles.Admin, NoteType = JobNoteTypes.Internal, Text = request.Reason.Trim(), IsInternal = true, CreatedAtUtc = DateTime.UtcNow }, cancellationToken);
+        await repository.SaveChangesAsync(cancellationToken);
+        await eventPublisher.PublishAsync(new JobEventMessage("job.disputed", job.Id, job.CustomerUserId, job.AssignedTechnicianUserId, job.Status), cancellationToken);
+        await NotifyPartiesAsync(job, "Job disputed", "Your job has been marked disputed for admin review.", cancellationToken);
+        return Result.Success(await MapDetailsAsync(job, includeInternal: true, includeAssignments: true, cancellationToken));
+    }
+
     public async Task<JobPaymentLookupResult?> GetPayableJobAsync(Guid jobId, Guid customerUserId, CancellationToken cancellationToken = default)
     {
         var job = await repository.GetJobAsync(jobId, cancellationToken);
@@ -387,6 +523,8 @@ public sealed class JobsService(
 
     private async Task NotifyAsync(Guid userId, string type, string title, string body, IReadOnlyDictionary<string, string?> data, CancellationToken cancellationToken)
     {
+        if (userId == Guid.Empty) return;
+
         try
         {
             await notificationService.SendAsync(new SendNotificationRequest(userId, type, title, body, data, [NotificationChannels.InApp]), cancellationToken);
@@ -405,6 +543,78 @@ public sealed class JobsService(
         ["amount"] = job.EstimatedTotalAmount.ToString("0.00"),
         ["currency"] = job.Currency
     };
+
+    private async Task<Result<JobDetailsResponse>> ExecuteTechnicianStatusActionAsync(Guid jobId, string requiredStatus, string nextStatus, string eventName, string reason, string notificationType, CancellationToken cancellationToken)
+    {
+        var job = await repository.GetJobAsync(jobId, cancellationToken);
+        if (job is null || job.AssignedTechnicianUserId != currentUserContext.UserId)
+        {
+            return Result.Failure<JobDetailsResponse>("job_not_found", "Job was not found.");
+        }
+
+        if (job.Status != requiredStatus)
+        {
+            return Result.Failure<JobDetailsResponse>("invalid_job_status", $"Job must be {requiredStatus}.");
+        }
+
+        await ChangeStatusAsync(job, nextStatus, currentUserContext.UserId, reason, cancellationToken);
+        await repository.AddNoteAsync(new JobNote { JobId = job.Id, AuthorUserId = currentUserContext.UserId, AuthorRole = JobNoteAuthorRoles.Technician, NoteType = JobNoteTypes.General, Text = reason, CreatedAtUtc = DateTime.UtcNow }, cancellationToken);
+        await repository.SaveChangesAsync(cancellationToken);
+        await eventPublisher.PublishAsync(new JobEventMessage(eventName, job.Id, job.CustomerUserId, job.AssignedTechnicianUserId, job.Status), cancellationToken);
+        await NotifyAsync(job.CustomerUserId, notificationType, reason, reason, JobData(job), cancellationToken);
+        return Result.Success(await MapDetailsAsync(job, includeInternal: false, includeAssignments: true, cancellationToken));
+    }
+
+    private async Task NotifyPartiesAsync(Job job, string title, string body, CancellationToken cancellationToken)
+    {
+        await NotifyAsync(job.CustomerUserId, NotificationTypes.JobStatusChanged, title, body, JobData(job), cancellationToken);
+        if (job.AssignedTechnicianUserId.HasValue)
+        {
+            await NotifyAsync(job.AssignedTechnicianUserId.Value, NotificationTypes.JobStatusChanged, title, body, JobData(job), cancellationToken);
+        }
+    }
+
+    private async Task<JobTrackingResponse> MapTrackingAsync(Job job, CancellationToken cancellationToken)
+    {
+        var technician = job.AssignedTechnicianId.HasValue ? await MapTechnicianAsync(job.AssignedTechnicianId.Value, cancellationToken) : null;
+        var location = IsTrackingActive(job.Status) && job.AssignedTechnicianId.HasValue ? await MapLocationAsync(job.AssignedTechnicianId.Value, cancellationToken) : null;
+        var history = await repository.GetStatusHistoryAsync(job.Id, cancellationToken);
+        return new JobTrackingResponse(job.Id, job.JobNumber, job.Status, technician, location, location?.UpdatedAtUtc, job.ServiceZoneId, history.Select(MapHistory).ToArray());
+    }
+
+    private async Task<JobTimelineResponse> MapTimelineAsync(Job job, bool includeInternal, CancellationToken cancellationToken)
+    {
+        var history = await repository.GetStatusHistoryAsync(job.Id, cancellationToken);
+        var notes = await repository.GetNotesAsync(job.Id, includeInternal, cancellationToken);
+        var media = await repository.GetMediaAsync(job.Id, cancellationToken);
+        return new JobTimelineResponse(job.Id, job.JobNumber, history.Select(MapHistory).ToArray(), notes.Select(MapNote).ToArray(), media.Select(MapMediaResponse).ToArray());
+    }
+
+    private async Task<TechnicianPublicProfileResponse?> MapTechnicianAsync(Guid technicianId, CancellationToken cancellationToken)
+    {
+        var technician = await technicianLookupService.GetPublicProfileAsync(technicianId, cancellationToken);
+        return technician is null ? null : new TechnicianPublicProfileResponse(technician.TechnicianId, technician.UserId, technician.FullName, technician.ProfileImageUrl, technician.AverageRating, technician.TotalReviews);
+    }
+
+    private async Task<TechnicianLocationResponse?> MapLocationAsync(Guid technicianId, CancellationToken cancellationToken)
+    {
+        var location = await technicianLocationLookupService.GetLatestLocationAsync(technicianId, cancellationToken);
+        return location is null ? null : new TechnicianLocationResponse(location.TechnicianId, location.Latitude, location.Longitude, location.UpdatedAtUtc);
+    }
+
+    private static bool IsTrackingActive(string status) => status is JobStatuses.TechnicianAccepted or JobStatuses.TechnicianOnWay or JobStatuses.Arrived or JobStatuses.InProgress;
+
+    private static readonly string[] ActiveOperationsStatuses =
+    [
+        JobStatuses.Paid,
+        JobStatuses.SearchingTechnician,
+        JobStatuses.WaitingForManualAssignment,
+        JobStatuses.TechnicianAssigned,
+        JobStatuses.TechnicianAccepted,
+        JobStatuses.TechnicianOnWay,
+        JobStatuses.Arrived,
+        JobStatuses.InProgress
+    ];
 
     private async Task ChangeStatusAsync(Job job, string toStatus, Guid? changedByUserId, string? reason, CancellationToken cancellationToken)
     {
@@ -428,7 +638,7 @@ public sealed class JobsService(
             job.Currency, job.EstimatedTotalAmount, job.EstimatedDepositAmount, job.RequiresInspection,
             job.CancellationReason, job.CancelledAtUtc, job.CreatedAtUtc, job.UpdatedAtUtc,
             media.Select(MapMediaResponse).ToArray(), notes.Select(MapNote).ToArray(),
-            history.Select(item => new JobStatusHistoryResponse(item.Id, item.FromStatus, item.ToStatus, item.ChangedByUserId, item.Reason, item.CreatedAtUtc)).ToArray(),
+            history.Select(MapHistory).ToArray(),
             assignments.Select(item => new JobAssignmentResponse(item.Id, item.TechnicianId, item.TechnicianUserId, item.Status, item.OfferedAtUtc, item.RespondedAtUtc, item.ExpiresAtUtc, item.RejectionReason)).ToArray());
     }
 
@@ -438,4 +648,5 @@ public sealed class JobsService(
     private static JobMedia MapMedia(Guid jobId, Guid userId, JobMediaRequest request, DateTime now) => new() { JobId = jobId, UploadedByUserId = userId, MediaType = request.MediaType, FileUrl = request.FileUrl.Trim(), FileKey = request.FileKey?.Trim(), Caption = request.Caption?.Trim(), CreatedAtUtc = now };
     private static JobMediaResponse MapMediaResponse(JobMedia media) => new(media.Id, media.MediaType, media.FileUrl, media.FileKey, media.Caption, media.UploadedByUserId, media.CreatedAtUtc);
     private static JobNoteResponse MapNote(JobNote note) => new(note.Id, note.AuthorUserId, note.AuthorRole, note.NoteType, note.Text, note.IsInternal, note.CreatedAtUtc);
+    private static JobStatusHistoryResponse MapHistory(JobStatusHistory item) => new(item.Id, item.FromStatus, item.ToStatus, item.ChangedByUserId, item.Reason, item.CreatedAtUtc);
 }

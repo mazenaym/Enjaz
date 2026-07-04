@@ -26,6 +26,12 @@ public sealed record AssignTechnicianRequest(Guid TechnicianId, int ExpiresInMin
 
 public sealed record RejectAssignmentRequest(string Reason);
 
+public sealed record CompleteJobRequest(string? CompletionNotes, IReadOnlyCollection<JobMediaRequest>? Media);
+
+public sealed record AdminForceCompleteRequest(string Reason);
+
+public sealed record DisputeRequest(string Reason);
+
 public sealed record JobListQuery(string? Status, int Page = 1, int PageSize = 20);
 
 public sealed record AdminJobListQuery(
@@ -97,3 +103,15 @@ public sealed record JobNoteResponse(Guid Id, Guid AuthorUserId, string AuthorRo
 public sealed record JobStatusHistoryResponse(Guid Id, string? FromStatus, string ToStatus, Guid? ChangedByUserId, string? Reason, DateTime CreatedAtUtc);
 
 public sealed record JobAssignmentResponse(Guid Id, Guid TechnicianId, Guid TechnicianUserId, string Status, DateTime OfferedAtUtc, DateTime? RespondedAtUtc, DateTime? ExpiresAtUtc, string? RejectionReason);
+
+public sealed record TechnicianPublicProfileResponse(Guid TechnicianId, Guid UserId, string FullName, string? ProfileImageUrl, decimal AverageRating, int TotalReviews);
+
+public sealed record TechnicianLocationResponse(Guid TechnicianId, decimal Latitude, decimal Longitude, DateTime UpdatedAtUtc);
+
+public sealed record JobTrackingResponse(Guid JobId, string JobNumber, string Status, TechnicianPublicProfileResponse? AssignedTechnician, TechnicianLocationResponse? LatestTechnicianLocation, DateTime? LastLocationUpdatedAtUtc, Guid? ServiceZoneId, IReadOnlyCollection<JobStatusHistoryResponse> Timeline);
+
+public sealed record JobTimelineResponse(Guid JobId, string JobNumber, IReadOnlyCollection<JobStatusHistoryResponse> StatusHistory, IReadOnlyCollection<JobNoteResponse> Notes, IReadOnlyCollection<JobMediaResponse> Media);
+
+public sealed record JobPaymentSummaryResponse(Guid PaymentId, string Status, decimal Amount, string Currency, DateTime? PaidAtUtc, DateTime? FailedAtUtc);
+
+public sealed record JobOperationsDetailsResponse(JobDetailsResponse Job, TechnicianPublicProfileResponse? AssignedTechnician, TechnicianLocationResponse? LatestTechnicianLocation, JobPaymentSummaryResponse? Payment, JobTimelineResponse Timeline);

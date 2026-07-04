@@ -56,8 +56,23 @@ public sealed record TechnicianLookupResult(
     string Status,
     string AvailabilityStatus);
 
+public sealed record TechnicianPublicLookupResult(
+    Guid TechnicianId,
+    Guid UserId,
+    string FullName,
+    string? ProfileImageUrl,
+    decimal AverageRating,
+    int TotalReviews);
+
 public sealed record TechnicianLocationUpdatedEvent(
     Guid TechnicianId,
     decimal Latitude,
     decimal Longitude,
-    DateTime UpdatedAtUtc);
+    DateTime UpdatedAtUtc,
+    Guid? JobId = null,
+    Guid? CustomerUserId = null,
+    Guid? TechnicianUserId = null);
+
+public sealed record TechnicianLocationLookupResponse(Guid TechnicianId, decimal Latitude, decimal Longitude, DateTime UpdatedAtUtc);
+
+public sealed record TechnicianActiveJobLookupResult(Guid JobId, Guid CustomerUserId, Guid TechnicianId, Guid TechnicianUserId, string Status);

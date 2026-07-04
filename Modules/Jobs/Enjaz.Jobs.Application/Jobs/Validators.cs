@@ -76,3 +76,29 @@ public sealed class RejectAssignmentRequestValidator : AbstractValidator<RejectA
         RuleFor(request => request.Reason).NotEmpty().MaximumLength(500);
     }
 }
+
+public sealed class CompleteJobRequestValidator : AbstractValidator<CompleteJobRequest>
+{
+    public CompleteJobRequestValidator()
+    {
+        RuleFor(request => request.CompletionNotes).MaximumLength(1000);
+        RuleFor(request => request.Media).Must(media => media is null || media.Count <= 10).WithMessage("Media cannot exceed 10 items.");
+        RuleForEach(request => request.Media).SetValidator(new JobMediaRequestValidator());
+    }
+}
+
+public sealed class AdminForceCompleteRequestValidator : AbstractValidator<AdminForceCompleteRequest>
+{
+    public AdminForceCompleteRequestValidator()
+    {
+        RuleFor(request => request.Reason).NotEmpty().MaximumLength(500);
+    }
+}
+
+public sealed class DisputeRequestValidator : AbstractValidator<DisputeRequest>
+{
+    public DisputeRequestValidator()
+    {
+        RuleFor(request => request.Reason).NotEmpty().MaximumLength(500);
+    }
+}

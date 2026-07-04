@@ -1,8 +1,10 @@
 using Enjaz.Jobs.Domain.Jobs;
+using Enjaz.Notifications.Application.Notifications;
+using Enjaz.Notifications.Domain.Notifications;
 
 namespace Enjaz.Jobs.Application.Jobs;
 
-public sealed class ExpireTechnicianAssignmentJob(IJobsRepository repository, IJobsEventPublisher eventPublisher) : IExpireTechnicianAssignmentJob
+public sealed class ExpireTechnicianAssignmentJob(IJobsRepository repository, IJobsEventPublisher eventPublisher, INotificationService notificationService) : IExpireTechnicianAssignmentJob
 {
     public async Task ExecuteAsync(CancellationToken cancellationToken = default)
     {
@@ -46,9 +48,26 @@ public sealed class ExpireTechnicianAssignmentJob(IJobsRepository repository, IJ
                 CreatedAtUtc = now
             }, cancellationToken);
 
+            if (!await repository.OperationAlertExistsAsync(job.Id, JobOperationAlertTypes.AssignmentNoResponse, cancellationToken))
+            {
+                await repository.AddOperationAlertAsync(new JobOperationAlert { JobId = job.Id, AlertType = JobOperationAlertTypes.AssignmentNoResponse, CreatedAtUtc = now }, cancellationToken);
+                await NotifyAdminAsync(job, "Technician assignment expired.", cancellationToken);
+            }
+
             await eventPublisher.PublishAsync(new JobEventMessage("job.status.changed", job.Id, job.CustomerUserId, assignment.TechnicianUserId, job.Status), cancellationToken);
         }
 
         await repository.SaveChangesAsync(cancellationToken);
+    }
+
+    private async Task NotifyAdminAsync(Job job, string body, CancellationToken cancellationToken)
+    {
+        try
+        {
+            await notificationService.SendInAppAsync(Guid.Empty, NotificationTypes.General, "Admin intervention required", $"{body} Job {job.JobNumber}.", new Dictionary<string, string?> { ["jobId"] = job.Id.ToString(), ["jobNumber"] = job.JobNumber }, cancellationToken);
+        }
+        catch
+        {
+        }
     }
 }

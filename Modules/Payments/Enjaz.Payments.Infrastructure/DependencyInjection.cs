@@ -2,6 +2,7 @@ using Enjaz.Payments.Application.Payments;
 using Enjaz.Payments.Domain.Payments;
 using Enjaz.Payments.Infrastructure.Payments;
 using Enjaz.Payments.Infrastructure.Persistence;
+using Enjaz.Jobs.Application.Jobs;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -17,6 +18,7 @@ public static class DependencyInjection
 
         services.AddDbContext<PaymentsDbContext>(options => options.UseNpgsql(connectionString));
         services.AddScoped<IPaymentsRepository, PaymentsRepository>();
+        services.AddScoped<IJobPaymentSummaryLookupService, JobPaymentSummaryLookupService>();
         services.AddScoped<IPaymentProvider>(_ =>
         {
             var provider = configuration["Payments:Provider"] ?? PaymentProviders.Fake;

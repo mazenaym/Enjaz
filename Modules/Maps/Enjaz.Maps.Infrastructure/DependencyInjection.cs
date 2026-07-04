@@ -20,6 +20,7 @@ public static class DependencyInjection
                 npgsqlOptions => npgsqlOptions.UseNetTopologySuite()));
 
         services.AddScoped<IMapsRepository, MapsRepository>();
+        services.AddScoped<ITechnicianLocationLookupService, MapsRepository>();
 
         return services;
     }

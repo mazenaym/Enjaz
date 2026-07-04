@@ -8,6 +8,8 @@ public interface ICustomerJobsService
     Task<Result<JobCreateResponse>> CreateAsync(CreateJobRequest request, CancellationToken cancellationToken = default);
     Task<Result<IReadOnlyCollection<JobSummaryResponse>>> GetMyJobsAsync(JobListQuery query, CancellationToken cancellationToken = default);
     Task<Result<JobDetailsResponse>> GetMyJobDetailsAsync(Guid id, CancellationToken cancellationToken = default);
+    Task<Result<JobTrackingResponse>> GetTrackingAsync(Guid id, CancellationToken cancellationToken = default);
+    Task<Result<JobTimelineResponse>> GetTimelineAsync(Guid id, CancellationToken cancellationToken = default);
     Task<Result<JobDetailsResponse>> CancelAsync(Guid id, CancelJobRequest request, CancellationToken cancellationToken = default);
     Task<Result<JobMediaResponse>> AddMediaAsync(Guid id, JobMediaRequest request, CancellationToken cancellationToken = default);
 }
@@ -21,11 +23,23 @@ public interface IAdminJobsService
     Task<Result<JobDetailsResponse>> AssignTechnicianAsync(Guid id, AssignTechnicianRequest request, CancellationToken cancellationToken = default);
 }
 
+public interface IAdminOperationsService
+{
+    Task<Result<IReadOnlyCollection<JobSummaryResponse>>> GetActiveJobsAsync(CancellationToken cancellationToken = default);
+    Task<Result<JobOperationsDetailsResponse>> GetJobOperationsDetailsAsync(Guid jobId, CancellationToken cancellationToken = default);
+    Task<Result<JobDetailsResponse>> ForceCompleteAsync(Guid jobId, AdminForceCompleteRequest request, CancellationToken cancellationToken = default);
+    Task<Result<JobDetailsResponse>> MarkDisputedAsync(Guid jobId, DisputeRequest request, CancellationToken cancellationToken = default);
+}
+
 public interface ITechnicianJobsService
 {
     Task<Result<IReadOnlyCollection<JobSummaryResponse>>> GetMyAssignedJobsAsync(CancellationToken cancellationToken = default);
     Task<Result<JobDetailsResponse>> AcceptAssignmentAsync(Guid jobId, CancellationToken cancellationToken = default);
     Task<Result<JobDetailsResponse>> RejectAssignmentAsync(Guid jobId, RejectAssignmentRequest request, CancellationToken cancellationToken = default);
+    Task<Result<JobDetailsResponse>> StartTripAsync(Guid jobId, CancellationToken cancellationToken = default);
+    Task<Result<JobDetailsResponse>> ArriveAsync(Guid jobId, CancellationToken cancellationToken = default);
+    Task<Result<JobDetailsResponse>> StartWorkAsync(Guid jobId, CancellationToken cancellationToken = default);
+    Task<Result<JobDetailsResponse>> CompleteAsync(Guid jobId, CompleteJobRequest request, CancellationToken cancellationToken = default);
 }
 
 public interface IJobsRepository
@@ -43,6 +57,8 @@ public interface IJobsRepository
     Task<JobAssignment?> GetActiveAssignmentAsync(Guid jobId, Guid technicianUserId, CancellationToken cancellationToken = default);
     Task AddAssignmentAsync(JobAssignment assignment, CancellationToken cancellationToken = default);
     Task<IReadOnlyCollection<JobAssignment>> GetExpiredOfferedAssignmentsAsync(DateTime nowUtc, CancellationToken cancellationToken = default);
+    Task<bool> OperationAlertExistsAsync(Guid jobId, string alertType, CancellationToken cancellationToken = default);
+    Task AddOperationAlertAsync(JobOperationAlert alert, CancellationToken cancellationToken = default);
     Task<string> GenerateJobNumberAsync(DateTime nowUtc, CancellationToken cancellationToken = default);
     Task SaveChangesAsync(CancellationToken cancellationToken = default);
 }
@@ -74,6 +90,12 @@ public interface IExpireTechnicianAssignmentJob
     Task ExecuteAsync(CancellationToken cancellationToken = default);
 }
 
+public interface IJobOperationalTimeoutsJob
+{
+    Task CheckTechnicianOnWayLateAsync(CancellationToken cancellationToken = default);
+    Task CheckInProgressTooLongAsync(CancellationToken cancellationToken = default);
+}
+
 public interface IJobPaymentLookupService
 {
     Task<JobPaymentLookupResult?> GetPayableJobAsync(Guid jobId, Guid customerUserId, CancellationToken cancellationToken = default);
@@ -83,6 +105,11 @@ public interface IJobPaymentStatusService
 {
     Task<Result> MarkJobPaidAsync(Guid jobId, Guid paymentId, Guid? changedByUserId, CancellationToken cancellationToken = default);
     Task<Result> MarkJobPaymentFailedAsync(Guid jobId, Guid paymentId, string reason, CancellationToken cancellationToken = default);
+}
+
+public interface IJobPaymentSummaryLookupService
+{
+    Task<JobPaymentSummaryResponse?> GetPaymentSummaryAsync(Guid jobId, CancellationToken cancellationToken = default);
 }
 
 public sealed record CustomerProfileLookupResult(Guid Id, Guid UserId);

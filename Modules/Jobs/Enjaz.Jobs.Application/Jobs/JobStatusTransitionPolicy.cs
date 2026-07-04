@@ -31,10 +31,13 @@ public static class JobStatusTransitionPolicy
             (JobStatuses.WaitingForManualAssignment, JobStatuses.TechnicianAssigned) => actorRole == JobNoteAuthorRoles.Admin,
             (JobStatuses.WaitingForManualAssignment, JobStatuses.Cancelled) => true,
             (JobStatuses.TechnicianAccepted, JobStatuses.TechnicianOnWay) => true,
-            (JobStatuses.TechnicianAccepted, JobStatuses.Cancelled) => actorRole == JobNoteAuthorRoles.Admin,
+            (JobStatuses.TechnicianAccepted, JobStatuses.Cancelled) => true,
             (JobStatuses.TechnicianOnWay, JobStatuses.Arrived) => true,
             (JobStatuses.Arrived, JobStatuses.InProgress) => true,
             (JobStatuses.InProgress, JobStatuses.Completed) => true,
+            (_, JobStatuses.Completed) => actorRole == JobNoteAuthorRoles.Admin && fromStatus is not JobStatuses.Cancelled,
+            (_, JobStatuses.Disputed) => actorRole == JobNoteAuthorRoles.Admin && fromStatus is not JobStatuses.Completed and not JobStatuses.Cancelled,
+            (_, JobStatuses.Cancelled) => actorRole == JobNoteAuthorRoles.Admin && fromStatus is not JobStatuses.Completed,
             _ => false
         };
 

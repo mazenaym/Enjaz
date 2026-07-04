@@ -11,6 +11,7 @@ public sealed class MapsService(
     IMapsRepository repository,
     ICurrentUserContext currentUserContext,
     ITechnicianLookupService technicianLookupService,
+    IJobExecutionLookupService jobExecutionLookupService,
     IDistributedCache distributedCache,
     ITrackingEventPublisher trackingEventPublisher) : IMapsService
 {
@@ -182,8 +183,9 @@ public sealed class MapsService(
 
         await repository.SaveChangesAsync(cancellationToken);
         await CacheLiveLocationAsync(technician, request, now, cancellationToken);
+        var activeJob = await jobExecutionLookupService.GetActiveJobForTechnicianAsync(technician.TechnicianId, cancellationToken);
         await trackingEventPublisher.PublishTechnicianLocationUpdatedAsync(
-            new TechnicianLocationUpdatedEvent(technician.TechnicianId, request.Latitude, request.Longitude, now),
+            new TechnicianLocationUpdatedEvent(technician.TechnicianId, request.Latitude, request.Longitude, now, activeJob?.JobId, activeJob?.CustomerUserId, activeJob?.TechnicianUserId),
             cancellationToken);
 
         return Result.Success(new UpdateTechnicianLocationResponse("Location updated successfully", now));
