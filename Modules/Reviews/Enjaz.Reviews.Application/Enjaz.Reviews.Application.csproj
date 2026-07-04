@@ -3,6 +3,13 @@
   <ItemGroup>
     <ProjectReference Include="..\Enjaz.Reviews.Domain\Enjaz.Reviews.Domain.csproj" />
     <ProjectReference Include="..\..\..\Enjaz.SharedKernel\Enjaz.SharedKernel.csproj" />
+    <ProjectReference Include="..\..\Notifications\Enjaz.Notifications.Application\Enjaz.Notifications.Application.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FluentValidation" Version="12.1.1" />
+    <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.9" />
   </ItemGroup>
 
   <PropertyGroup>

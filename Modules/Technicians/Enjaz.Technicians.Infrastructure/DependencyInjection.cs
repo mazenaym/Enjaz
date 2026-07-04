@@ -1,5 +1,6 @@
 using Enjaz.Technicians.Application.Technicians;
 using Enjaz.Maps.Application.Maps;
+using Enjaz.Reviews.Application.Reviews;
 using Enjaz.Technicians.Infrastructure.Persistence;
 using Enjaz.Technicians.Infrastructure.Technicians;
 using Microsoft.EntityFrameworkCore;
@@ -22,6 +23,7 @@ public static class DependencyInjection
 
         services.AddScoped<ITechniciansRepository, TechniciansRepository>();
         services.AddScoped<ITechnicianLookupService, TechnicianLookupService>();
+        services.AddScoped<IReviewTechnicianLookupService, TechnicianLookupService>();
 
         return services;
     }

@@ -2,6 +2,7 @@ using Enjaz.Api.Realtime;
 using Enjaz.AI.Endpoints;
 using Enjaz.BuildingBlocks.Auth;
 using Enjaz.BuildingBlocks.Exceptions;
+using Enjaz.Calls.Endpoints;
 using Enjaz.Catalog.Endpoints;
 using Enjaz.Customers.Endpoints;
 using Enjaz.Identity.Endpoints;
@@ -12,6 +13,8 @@ using Enjaz.Maps.Endpoints.Realtime;
 using Enjaz.Notifications.Endpoints;
 using Enjaz.Payments.Endpoints;
 using Enjaz.Pricing.Endpoints;
+using Enjaz.Reviews.Endpoints;
+using Enjaz.Support.Endpoints;
 using Enjaz.Technicians.Endpoints;
 using Enjaz.Wallets.Endpoints;
 using FluentValidation.AspNetCore;
@@ -116,6 +119,9 @@ try
     builder.Services.AddPricingModule(builder.Configuration);
     builder.Services.AddNotificationsModule(builder.Configuration);
     builder.Services.AddJobsModule(builder.Configuration);
+    builder.Services.AddReviewsModule(builder.Configuration);
+    builder.Services.AddSupportModule(builder.Configuration);
+    builder.Services.AddCallsModule(builder.Configuration);
     builder.Services.AddWalletsModule(builder.Configuration);
     builder.Services.AddPaymentsModule(builder.Configuration);
 

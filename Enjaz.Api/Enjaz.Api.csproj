@@ -42,6 +42,7 @@
     <ProjectReference Include="..\Modules\Calls\Enjaz.Calls.Endpoints\Enjaz.Calls.Endpoints.csproj" />
     <ProjectReference Include="..\Modules\AI\Enjaz.AI.Endpoints\Enjaz.AI.Endpoints.csproj" />
     <ProjectReference Include="..\Modules\Reviews\Enjaz.Reviews.Endpoints\Enjaz.Reviews.Endpoints.csproj" />
+    <ProjectReference Include="..\Modules\Support\Enjaz.Support.Endpoints\Enjaz.Support.Endpoints.csproj" />
     <ProjectReference Include="..\Modules\Admin\Enjaz.Admin.Endpoints\Enjaz.Admin.Endpoints.csproj" />
   </ItemGroup>
 

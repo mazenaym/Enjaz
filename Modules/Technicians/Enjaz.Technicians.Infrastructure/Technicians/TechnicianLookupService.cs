@@ -1,11 +1,12 @@
 using Enjaz.Maps.Application.Maps;
+using Enjaz.Reviews.Application.Reviews;
 using Enjaz.Technicians.Domain.Technicians;
 using Enjaz.Technicians.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
 namespace Enjaz.Technicians.Infrastructure.Technicians;
 
-public sealed class TechnicianLookupService(TechniciansDbContext dbContext) : ITechnicianLookupService
+public sealed class TechnicianLookupService(TechniciansDbContext dbContext) : ITechnicianLookupService, IReviewTechnicianLookupService
 {
     public async Task<TechnicianLookupResult?> GetByUserIdAsync(Guid userId, CancellationToken cancellationToken = default)
     {
@@ -67,5 +68,28 @@ public sealed class TechnicianLookupService(TechniciansDbContext dbContext) : IT
         return await dbContext.TechnicianSkills
             .AsNoTracking()
             .AnyAsync(skill => skill.TechnicianId == technicianId && skill.ServiceId == serviceId, cancellationToken);
+    }
+
+    public async Task<Guid?> GetTechnicianIdByUserIdAsync(Guid userId, CancellationToken cancellationToken = default)
+    {
+        return await dbContext.TechnicianProfiles
+            .AsNoTracking()
+            .Where(profile => profile.UserId == userId)
+            .Select(profile => (Guid?)profile.Id)
+            .FirstOrDefaultAsync(cancellationToken);
+    }
+
+    public async Task UpdateRatingAsync(Guid technicianId, decimal averageRating, int totalReviews, CancellationToken cancellationToken = default)
+    {
+        var profile = await dbContext.TechnicianProfiles.FirstOrDefaultAsync(profile => profile.Id == technicianId, cancellationToken);
+        if (profile is null)
+        {
+            return;
+        }
+
+        profile.AverageRating = averageRating;
+        profile.TotalReviews = totalReviews;
+        profile.UpdatedAtUtc = DateTime.UtcNow;
+        await dbContext.SaveChangesAsync(cancellationToken);
     }
 }

@@ -2,6 +2,9 @@ using Enjaz.Jobs.Application.Jobs;
 using Enjaz.Jobs.Infrastructure.Jobs;
 using Enjaz.Jobs.Infrastructure.Persistence;
 using Enjaz.Maps.Application.Maps;
+using Enjaz.Calls.Application.Calls;
+using Enjaz.Reviews.Application.Reviews;
+using Enjaz.Support.Application.Support;
 using Enjaz.Wallets.Application.Wallets;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -23,6 +26,10 @@ public static class DependencyInjection
         services.AddScoped<IServiceZoneLookupService, ServiceZoneLookupService>();
         services.AddScoped<IJobWalletLookupService, JobWalletLookupService>();
         services.AddScoped<IJobExecutionLookupService, JobExecutionLookupService>();
+        services.AddScoped<Sprint10JobLookupService>();
+        services.AddScoped<IReviewJobLookupService>(provider => provider.GetRequiredService<Sprint10JobLookupService>());
+        services.AddScoped<ISupportJobLookupService>(provider => provider.GetRequiredService<Sprint10JobLookupService>());
+        services.AddScoped<ICallJobLookupService>(provider => provider.GetRequiredService<Sprint10JobLookupService>());
 
         return services;
     }
