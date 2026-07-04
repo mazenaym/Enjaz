@@ -1,5 +1,7 @@
 using Enjaz.Jobs.Domain.Jobs;
 using Enjaz.Maps.Application.Maps;
+using Enjaz.Notifications.Application.Notifications;
+using Enjaz.Notifications.Domain.Notifications;
 using Enjaz.SharedKernel.Auth;
 using Enjaz.SharedKernel.Results;
 using Microsoft.EntityFrameworkCore;
@@ -13,7 +15,8 @@ public sealed class JobsService(
     IPricingSnapshotLookupService pricingSnapshotLookupService,
     IServiceZoneLookupService serviceZoneLookupService,
     ITechnicianLookupService technicianLookupService,
-    IJobsEventPublisher eventPublisher)
+    IJobsEventPublisher eventPublisher,
+    INotificationService notificationService)
     : ICustomerJobsService, IAdminJobsService, ITechnicianJobsService, IJobPaymentLookupService, IJobPaymentStatusService
 {
     public async Task<Result<JobCreateResponse>> CreateAsync(CreateJobRequest request, CancellationToken cancellationToken = default)
@@ -102,6 +105,7 @@ public sealed class JobsService(
 
         await repository.SaveChangesAsync(cancellationToken);
         await eventPublisher.PublishAsync(new JobEventMessage("job.created", job.Id, job.CustomerUserId, Status: job.Status), cancellationToken);
+        await NotifyAsync(job.CustomerUserId, NotificationTypes.JobCreated, "Job created", "Your job was created.", JobData(job), cancellationToken);
 
         return Result.Success(new JobCreateResponse(job.Id, job.JobNumber, job.Status, job.PriceSnapshotId, job.EstimatedTotalAmount, job.EstimatedDepositAmount, job.Currency, job.RequiresInspection));
     }
@@ -146,6 +150,7 @@ public sealed class JobsService(
         await repository.AddNoteAsync(new JobNote { JobId = job.Id, AuthorUserId = currentUserContext.UserId, AuthorRole = JobNoteAuthorRoles.Customer, NoteType = JobNoteTypes.Cancellation, Text = request.Reason.Trim(), CreatedAtUtc = DateTime.UtcNow }, cancellationToken);
         await repository.SaveChangesAsync(cancellationToken);
         await eventPublisher.PublishAsync(new JobEventMessage("job.cancelled", job.Id, job.CustomerUserId, Status: job.Status), cancellationToken);
+        await NotifyAsync(job.CustomerUserId, NotificationTypes.JobCancelled, "Job cancelled", "Your job was cancelled.", JobData(job), cancellationToken);
         return Result.Success(await MapDetailsAsync(job, includeInternal: false, includeAssignments: false, cancellationToken));
     }
 
@@ -201,6 +206,7 @@ public sealed class JobsService(
         await ChangeStatusAsync(job, request.Status, currentUserContext.UserId, request.Reason, cancellationToken);
         await repository.SaveChangesAsync(cancellationToken);
         await eventPublisher.PublishAsync(new JobEventMessage("job.status.changed", job.Id, job.CustomerUserId, job.AssignedTechnicianUserId, job.Status), cancellationToken);
+        await NotifyAsync(job.CustomerUserId, NotificationTypes.JobStatusChanged, "Job status changed", "Your job status changed.", JobData(job), cancellationToken);
         return Result.Success(await MapDetailsAsync(job, includeInternal: true, includeAssignments: true, cancellationToken));
     }
 
@@ -252,6 +258,8 @@ public sealed class JobsService(
         await repository.AddNoteAsync(new JobNote { JobId = id, AuthorUserId = currentUserContext.UserId, AuthorRole = JobNoteAuthorRoles.Admin, NoteType = JobNoteTypes.Assignment, Text = $"Technician assigned: {technician.TechnicianId}", IsInternal = true, CreatedAtUtc = now }, cancellationToken);
         await repository.SaveChangesAsync(cancellationToken);
         await eventPublisher.PublishAsync(new JobEventMessage("job.assigned", job.Id, job.CustomerUserId, technician.UserId, job.Status), cancellationToken);
+        await NotifyAsync(job.CustomerUserId, NotificationTypes.TechnicianAssigned, "Technician assigned", "A technician was assigned to your job.", JobData(job), cancellationToken);
+        await NotifyAsync(technician.UserId, NotificationTypes.TechnicianAssigned, "New assignment", "You have a new assignment.", JobData(job), cancellationToken);
         return Result.Success(await MapDetailsAsync(job, includeInternal: true, includeAssignments: true, cancellationToken));
     }
 
@@ -285,6 +293,8 @@ public sealed class JobsService(
         await ChangeStatusAsync(job, JobStatuses.TechnicianAccepted, currentUserContext.UserId, "Technician accepted assignment.", cancellationToken);
         await repository.SaveChangesAsync(cancellationToken);
         await eventPublisher.PublishAsync(new JobEventMessage("job.assignment.accepted", job.Id, job.CustomerUserId, assignment.TechnicianUserId, job.Status), cancellationToken);
+        await NotifyAsync(job.CustomerUserId, NotificationTypes.AssignmentAccepted, "Assignment accepted", "The technician accepted your job.", JobData(job), cancellationToken);
+        await NotifyAsync(assignment.TechnicianUserId, NotificationTypes.AssignmentAccepted, "Assignment accepted", "You accepted the assignment.", JobData(job), cancellationToken);
         return Result.Success(await MapDetailsAsync(job, includeInternal: false, includeAssignments: true, cancellationToken));
     }
 
@@ -306,6 +316,8 @@ public sealed class JobsService(
         await repository.AddNoteAsync(new JobNote { JobId = job.Id, AuthorUserId = currentUserContext.UserId, AuthorRole = JobNoteAuthorRoles.Technician, NoteType = JobNoteTypes.Assignment, Text = request.Reason.Trim(), IsInternal = true, CreatedAtUtc = DateTime.UtcNow }, cancellationToken);
         await repository.SaveChangesAsync(cancellationToken);
         await eventPublisher.PublishAsync(new JobEventMessage("job.assignment.rejected", job.Id, job.CustomerUserId, assignment.TechnicianUserId, job.Status), cancellationToken);
+        await NotifyAsync(job.CustomerUserId, NotificationTypes.AssignmentRejected, "Assignment rejected", "The technician rejected your job assignment.", JobData(job), cancellationToken);
+        await NotifyAsync(assignment.TechnicianUserId, NotificationTypes.AssignmentRejected, "Assignment rejected", "You rejected the assignment.", JobData(job), cancellationToken);
         return Result.Success(await MapDetailsAsync(job, includeInternal: false, includeAssignments: true, cancellationToken));
     }
 
@@ -354,6 +366,7 @@ public sealed class JobsService(
         await repository.SaveChangesAsync(cancellationToken);
         await eventPublisher.PublishAsync(new JobEventMessage("job.payment.succeeded", job.Id, job.CustomerUserId, job.AssignedTechnicianUserId, job.Status), cancellationToken);
         await eventPublisher.PublishAsync(new JobEventMessage("job.status.changed", job.Id, job.CustomerUserId, job.AssignedTechnicianUserId, job.Status), cancellationToken);
+        await NotifyAsync(job.CustomerUserId, NotificationTypes.PaymentSucceeded, "Payment succeeded", "Your payment was received.", JobData(job), cancellationToken);
         return Result.Success();
     }
 
@@ -368,8 +381,30 @@ public sealed class JobsService(
         await repository.AddNoteAsync(new JobNote { JobId = job.Id, AuthorUserId = Guid.Empty, AuthorRole = JobNoteAuthorRoles.System, NoteType = JobNoteTypes.Pricing, Text = $"Payment {paymentId} failed: {reason}", IsInternal = true, CreatedAtUtc = DateTime.UtcNow }, cancellationToken);
         await repository.SaveChangesAsync(cancellationToken);
         await eventPublisher.PublishAsync(new JobEventMessage("job.payment.failed", job.Id, job.CustomerUserId, job.AssignedTechnicianUserId, job.Status), cancellationToken);
+        await NotifyAsync(job.CustomerUserId, NotificationTypes.PaymentFailed, "Payment failed", "Your payment could not be completed.", JobData(job), cancellationToken);
         return Result.Success();
     }
+
+    private async Task NotifyAsync(Guid userId, string type, string title, string body, IReadOnlyDictionary<string, string?> data, CancellationToken cancellationToken)
+    {
+        try
+        {
+            await notificationService.SendAsync(new SendNotificationRequest(userId, type, title, body, data, [NotificationChannels.InApp]), cancellationToken);
+        }
+        catch
+        {
+            // Notification delivery must not block the primary job flow.
+        }
+    }
+
+    private static IReadOnlyDictionary<string, string?> JobData(Job job) => new Dictionary<string, string?>
+    {
+        ["jobId"] = job.Id.ToString(),
+        ["jobNumber"] = job.JobNumber,
+        ["status"] = job.Status,
+        ["amount"] = job.EstimatedTotalAmount.ToString("0.00"),
+        ["currency"] = job.Currency
+    };
 
     private async Task ChangeStatusAsync(Job job, string toStatus, Guid? changedByUserId, string? reason, CancellationToken cancellationToken)
     {

@@ -1,6 +1,8 @@
 using System.Text.Json;
 using Enjaz.Jobs.Application.Jobs;
 using Enjaz.Jobs.Domain.Jobs;
+using Enjaz.Notifications.Application.Notifications;
+using Enjaz.Notifications.Domain.Notifications;
 using Enjaz.Payments.Domain.Payments;
 using Enjaz.SharedKernel.Auth;
 using Enjaz.SharedKernel.Results;
@@ -16,7 +18,8 @@ public sealed class PaymentsService(
     IJobPaymentLookupService jobPaymentLookupService,
     IJobPaymentStatusService jobPaymentStatusService,
     IPaymentLedgerService paymentLedgerService,
-    IRefundLedgerService refundLedgerService)
+    IRefundLedgerService refundLedgerService,
+    INotificationService notificationService)
     : IPaymentsService, IAdminPaymentsService
 {
     public async Task<Result<PaymentCheckoutResponse>> CreateCheckoutAsync(CreateCheckoutRequest request, CancellationToken cancellationToken = default)
@@ -75,6 +78,7 @@ public sealed class PaymentsService(
         payment.UpdatedAtUtc = DateTime.UtcNow;
         await repository.AddTransactionAsync(new PaymentTransaction { PaymentId = payment.Id, Provider = payment.Provider, ProviderOrderId = payment.ProviderOrderId, TransactionType = PaymentTransactionTypes.CheckoutCreated, Amount = payment.Amount, Currency = payment.Currency, Status = payment.Status, RawPayloadJson = provider.RawResponseJson, CreatedAtUtc = DateTime.UtcNow }, cancellationToken);
         await repository.SaveChangesAsync(cancellationToken);
+        await NotifyPaymentAsync(payment, NotificationTypes.PaymentCheckoutCreated, "Payment checkout created", "Your payment checkout was created.", cancellationToken);
         return Result.Success(MapCheckout(payment));
     }
 
@@ -268,13 +272,41 @@ public sealed class PaymentsService(
                 var refundLedgerResult = await refundLedgerService.RecordRefundRequestedAsync(refundRequest.Id, payment.Id, payment.JobId, payment.Amount, payment.Currency, refundRequest.Reason, cancellationToken);
                 if (refundLedgerResult.IsFailure) return Result.Failure<PaymentDetailsResponse>(refundLedgerResult.ErrorCode!, refundLedgerResult.ErrorMessage!);
             }
+            await NotifyPaymentAsync(payment, NotificationTypes.PaymentSucceeded, "Payment succeeded", "Your payment was received.", cancellationToken);
         }
         else
         {
             await jobPaymentStatusService.MarkJobPaymentFailedAsync(payment.JobId, payment.Id, failureReason ?? "Payment failed.", cancellationToken);
             await repository.SaveChangesAsync(cancellationToken);
+            await NotifyPaymentAsync(payment, NotificationTypes.PaymentFailed, "Payment failed", "Your payment could not be completed.", cancellationToken);
         }
         return Result.Success(await MapDetailsAsync(payment, cancellationToken));
+    }
+
+    private async Task NotifyPaymentAsync(Payment payment, string type, string title, string body, CancellationToken cancellationToken)
+    {
+        try
+        {
+            await notificationService.SendAsync(new SendNotificationRequest(
+                payment.CustomerUserId,
+                type,
+                title,
+                body,
+                new Dictionary<string, string?>
+                {
+                    ["paymentId"] = payment.Id.ToString(),
+                    ["jobId"] = payment.JobId.ToString(),
+                    ["jobNumber"] = payment.JobNumber,
+                    ["amount"] = payment.Amount.ToString("0.00"),
+                    ["currency"] = payment.Currency,
+                    ["status"] = payment.Status
+                },
+                [NotificationChannels.InApp]), cancellationToken);
+        }
+        catch
+        {
+            // Notification failures must not break payment flow.
+        }
     }
 
     private async Task<Result> RecordSuccessfulPaymentLedgerAsync(Payment payment, CancellationToken cancellationToken)

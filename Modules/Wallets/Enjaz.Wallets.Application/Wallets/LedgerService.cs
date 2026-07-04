@@ -1,9 +1,11 @@
 using Enjaz.SharedKernel.Results;
+using Enjaz.Notifications.Application.Notifications;
+using Enjaz.Notifications.Domain.Notifications;
 using Enjaz.Wallets.Domain.Wallets;
 
 namespace Enjaz.Wallets.Application.Wallets;
 
-public sealed class LedgerService(IWalletsRepository repository) : ILedgerService
+public sealed class LedgerService(IWalletsRepository repository, INotificationService notificationService) : ILedgerService
 {
     public async Task<Result<LedgerTransaction>> PostTransactionAsync(PostLedgerTransactionRequest request, CancellationToken cancellationToken = default)
     {
@@ -58,6 +60,7 @@ public sealed class LedgerService(IWalletsRepository repository) : ILedgerServic
 
             await repository.AddLedgerTransactionAsync(transaction, ct);
 
+            var touchedWallets = new List<(Wallet Wallet, PostLedgerEntryRequest Entry)>();
             foreach (var entryRequest in roundedEntries)
             {
                 var wallet = await repository.GetWalletAsync(entryRequest.WalletId, ct);
@@ -67,6 +70,7 @@ public sealed class LedgerService(IWalletsRepository repository) : ILedgerServic
                 }
 
                 ApplyEntry(wallet, entryRequest);
+                touchedWallets.Add((wallet, entryRequest));
                 await repository.AddLedgerEntryAsync(new LedgerEntry
                 {
                     LedgerTransactionId = transaction.Id,
@@ -81,8 +85,44 @@ public sealed class LedgerService(IWalletsRepository repository) : ILedgerServic
             }
 
             await repository.SaveChangesAsync(ct);
+            foreach (var item in touchedWallets.Where(item => item.Wallet.OwnerUserId.HasValue && item.Wallet.OwnerType != WalletOwnerTypes.ExternalPaymentProvider))
+            {
+                await NotifyWalletAsync(item.Wallet, item.Entry, transaction, ct);
+            }
+
             return Result.Success(transaction);
         }, cancellationToken);
+    }
+
+    private async Task NotifyWalletAsync(Wallet wallet, PostLedgerEntryRequest entry, LedgerTransaction transaction, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var type = transaction.TransactionType == LedgerTransactionTypes.TechnicianEarningReleased
+                ? NotificationTypes.TechnicianEarningAvailable
+                : wallet.OwnerType == WalletOwnerTypes.Technician && entry.BalanceType == LedgerBalanceTypes.Pending && entry.EntryDirection == LedgerEntryDirections.Credit
+                    ? NotificationTypes.TechnicianEarningPending
+                    : NotificationTypes.WalletUpdated;
+
+            await notificationService.SendAsync(new SendNotificationRequest(
+                wallet.OwnerUserId!.Value,
+                type,
+                "Wallet updated",
+                "Your wallet was updated.",
+                new Dictionary<string, string?>
+                {
+                    ["walletId"] = wallet.Id.ToString(),
+                    ["transactionId"] = transaction.Id.ToString(),
+                    ["transactionNumber"] = transaction.TransactionNumber,
+                    ["amount"] = entry.Amount.ToString("0.00"),
+                    ["currency"] = transaction.Currency
+                },
+                [NotificationChannels.InApp]), cancellationToken);
+        }
+        catch
+        {
+            // Wallet ledger posting must stay independent from notification delivery.
+        }
     }
 
     private static void ApplyEntry(Wallet wallet, PostLedgerEntryRequest entry)

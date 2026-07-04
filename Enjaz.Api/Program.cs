@@ -9,6 +9,7 @@ using Enjaz.Jobs.Endpoints;
 using Enjaz.Jobs.Endpoints.Realtime;
 using Enjaz.Maps.Endpoints;
 using Enjaz.Maps.Endpoints.Realtime;
+using Enjaz.Notifications.Endpoints;
 using Enjaz.Payments.Endpoints;
 using Enjaz.Pricing.Endpoints;
 using Enjaz.Technicians.Endpoints;
@@ -113,6 +114,7 @@ try
     builder.Services.AddMapsModule(builder.Configuration);
     builder.Services.AddAiModule(builder.Configuration);
     builder.Services.AddPricingModule(builder.Configuration);
+    builder.Services.AddNotificationsModule(builder.Configuration);
     builder.Services.AddJobsModule(builder.Configuration);
     builder.Services.AddWalletsModule(builder.Configuration);
     builder.Services.AddPaymentsModule(builder.Configuration);
@@ -130,6 +132,7 @@ try
         app.UseHangfireDashboard("/hangfire");
         Enjaz.Jobs.Endpoints.DependencyInjection.AddJobsRecurringJobs();
         Enjaz.Wallets.Endpoints.DependencyInjection.AddWalletsRecurringJobs();
+        Enjaz.Notifications.Endpoints.DependencyInjection.AddNotificationsRecurringJobs();
     }
 
     app.UseHttpsRedirection();

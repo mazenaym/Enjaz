@@ -3,6 +3,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Enjaz.Jobs.Domain\Enjaz.Jobs.Domain.csproj" />
     <ProjectReference Include="..\..\Maps\Enjaz.Maps.Application\Enjaz.Maps.Application.csproj" />
+    <ProjectReference Include="..\..\Notifications\Enjaz.Notifications.Application\Enjaz.Notifications.Application.csproj" />
     <ProjectReference Include="..\..\..\Enjaz.SharedKernel\Enjaz.SharedKernel.csproj" />
   </ItemGroup>
 
