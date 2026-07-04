@@ -1,6 +1,7 @@
 using Enjaz.Identity.Application.Auth;
 using Enjaz.Identity.Infrastructure.Auth;
 using Enjaz.Identity.Infrastructure.Persistence;
+using Enjaz.SharedKernel.Auth;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -23,6 +24,7 @@ public static class DependencyInjection
                 npgsqlOptions => npgsqlOptions.UseNetTopologySuite()));
 
         services.AddScoped<IIdentityRepository, IdentityRepository>();
+        services.AddScoped<IIdentityUserService, IdentityUserService>();
         services.AddScoped<IOtpHasher, OtpHasher>();
         services.AddScoped<IOtpRateLimiter, RedisOtpRateLimiter>();
         services.AddScoped<IRefreshTokenService, RefreshTokenService>();

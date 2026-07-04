@@ -1,8 +1,10 @@
 using Enjaz.Api.Realtime;
 using Enjaz.BuildingBlocks.Auth;
 using Enjaz.BuildingBlocks.Exceptions;
+using Enjaz.Catalog.Endpoints;
 using Enjaz.Customers.Endpoints;
 using Enjaz.Identity.Endpoints;
+using Enjaz.Technicians.Endpoints;
 using FluentValidation.AspNetCore;
 using Hangfire;
 using Hangfire.PostgreSql;
@@ -98,6 +100,8 @@ try
     builder.Services.AddSignalR();
     builder.Services.AddIdentityModule(builder.Configuration);
     builder.Services.AddCustomersModule(builder.Configuration);
+    builder.Services.AddCatalogModule(builder.Configuration);
+    builder.Services.AddTechniciansModule(builder.Configuration);
 
     var app = builder.Build();
 

@@ -1,6 +1,16 @@
-﻿namespace Enjaz.Catalog.Application;
+using Enjaz.Catalog.Application.Catalog;
+using FluentValidation;
+using Microsoft.Extensions.DependencyInjection;
 
-public class DependencyInjection
+namespace Enjaz.Catalog.Application;
+
+public static class DependencyInjection
 {
+    public static IServiceCollection AddCatalogApplication(this IServiceCollection services)
+    {
+        services.AddValidatorsFromAssembly(AssemblyReference.Assembly);
+        services.AddScoped<ICatalogService, CatalogService>();
 
+        return services;
+    }
 }

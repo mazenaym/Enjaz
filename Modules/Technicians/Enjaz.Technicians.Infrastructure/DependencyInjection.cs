@@ -1,6 +1,26 @@
-﻿namespace Enjaz.Technicians.Infrastructure;
+using Enjaz.Technicians.Application.Technicians;
+using Enjaz.Technicians.Infrastructure.Persistence;
+using Enjaz.Technicians.Infrastructure.Technicians;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 
-public class DependencyInjection
+namespace Enjaz.Technicians.Infrastructure;
+
+public static class DependencyInjection
 {
+    public static IServiceCollection AddTechniciansInfrastructure(this IServiceCollection services, IConfiguration configuration)
+    {
+        var connectionString = configuration.GetConnectionString("DefaultConnection")
+            ?? throw new InvalidOperationException("Connection string 'DefaultConnection' is not configured.");
 
+        services.AddDbContext<TechniciansDbContext>(options =>
+            options.UseNpgsql(
+                connectionString,
+                npgsqlOptions => npgsqlOptions.UseNetTopologySuite()));
+
+        services.AddScoped<ITechniciansRepository, TechniciansRepository>();
+
+        return services;
+    }
 }
