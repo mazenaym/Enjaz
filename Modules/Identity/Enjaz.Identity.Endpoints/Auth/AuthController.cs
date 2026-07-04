@@ -83,13 +83,26 @@ public sealed class AuthController(IAuthService authService) : ControllerBase
     {
         return result.IsSuccess
             ? new OkObjectResult(new { message = "Success" })
-            : new BadRequestObjectResult(new { code = result.ErrorCode, message = result.ErrorMessage });
+            : ToErrorActionResult(result.ErrorCode, result.ErrorMessage);
     }
 
     private static IActionResult ToActionResult<T>(Result<T> result)
     {
         return result.IsSuccess
             ? new OkObjectResult(result.Value)
-            : new BadRequestObjectResult(new { code = result.ErrorCode, message = result.ErrorMessage });
+            : ToErrorActionResult(result.ErrorCode, result.ErrorMessage);
+    }
+
+    private static IActionResult ToErrorActionResult(string? code, string? message)
+    {
+        var body = new { code, message };
+        return code switch
+        {
+            "invalid_login" or "invalid_refresh_token" => new UnauthorizedObjectResult(body),
+            "phone_not_verified" => new ObjectResult(body) { StatusCode = StatusCodes.Status403Forbidden },
+            not null when code.EndsWith("_already_registered", StringComparison.Ordinal) => new ConflictObjectResult(body),
+            not null when code.EndsWith("_not_found", StringComparison.Ordinal) => new NotFoundObjectResult(body),
+            _ => new BadRequestObjectResult(body)
+        };
     }
 }

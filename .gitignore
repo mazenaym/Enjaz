@@ -13,3 +13,10 @@ TestResults/
 
 *.nupkg
 packages/
+
+logs/
+*.log
+.env
+.env.*
+appsettings.Production.json
+appsettings.Staging.json

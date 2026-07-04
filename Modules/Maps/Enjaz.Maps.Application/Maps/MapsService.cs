@@ -57,6 +57,12 @@ public sealed class MapsService(
             return Result.Failure<ServiceZoneDetailsResponse>("service_zone_slug_exists", "Service zone slug already exists.");
         }
 
+        var polygonResult = CreatePolygon(request.Polygon);
+        if (polygonResult.IsFailure)
+        {
+            return Result.Failure<ServiceZoneDetailsResponse>(polygonResult.ErrorCode!, polygonResult.ErrorMessage!);
+        }
+
         var zone = new ServiceZone
         {
             NameAr = request.NameAr.Trim(),
@@ -64,7 +70,7 @@ public sealed class MapsService(
             City = request.City.Trim(),
             Area = TrimOptional(request.Area),
             Slug = slug,
-            Polygon = CreatePolygon(request.Polygon ?? []),
+            Polygon = polygonResult.Value!,
             IsActive = true,
             CreatedAtUtc = DateTime.UtcNow
         };
@@ -97,7 +103,13 @@ public sealed class MapsService(
         zone.Slug = slug;
         if (request.Polygon is not null && request.Polygon.Count > 0)
         {
-            zone.Polygon = CreatePolygon(request.Polygon);
+            var polygonResult = CreatePolygon(request.Polygon);
+            if (polygonResult.IsFailure)
+            {
+                return Result.Failure<ServiceZoneDetailsResponse>(polygonResult.ErrorCode!, polygonResult.ErrorMessage!);
+            }
+
+            zone.Polygon = polygonResult.Value!;
         }
 
         zone.UpdatedAtUtc = DateTime.UtcNow;
@@ -248,15 +260,20 @@ public sealed class MapsService(
             zone.Polygon.Coordinates.Select(coordinate => new LocationPointResponse((decimal)coordinate.Y, (decimal)coordinate.X)).ToArray());
     }
 
-    private static Polygon CreatePolygon(IReadOnlyCollection<LocationPointRequest> points)
+    private static Result<Polygon> CreatePolygon(IReadOnlyCollection<LocationPointRequest>? points)
     {
+        if (points is null || points.Select(point => (point.Lat, point.Lng)).Distinct().Count() < 3)
+        {
+            return Result.Failure<Polygon>("invalid_polygon", "Polygon must contain at least 3 unique points.");
+        }
+
         var coordinates = points.Select(point => new Coordinate((double)point.Lng, (double)point.Lat)).ToList();
-        if (coordinates.Count == 0 || !coordinates[0].Equals2D(coordinates[^1]))
+        if (!coordinates[0].Equals2D(coordinates[^1]))
         {
             coordinates.Add(coordinates[0]);
         }
 
-        return new Polygon(new LinearRing(coordinates.ToArray())) { SRID = 4326 };
+        return Result.Success(new Polygon(new LinearRing(coordinates.ToArray())) { SRID = 4326 });
     }
 
     private static Point CreatePoint(decimal latitude, decimal longitude)

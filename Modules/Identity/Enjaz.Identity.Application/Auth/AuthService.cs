@@ -3,6 +3,7 @@ using Enjaz.Identity.Domain.Tokens;
 using Enjaz.Identity.Domain.Users;
 using Enjaz.SharedKernel.Customers;
 using Enjaz.SharedKernel.Results;
+using System.Security.Cryptography;
 
 namespace Enjaz.Identity.Application.Auth;
 
@@ -23,9 +24,9 @@ public sealed class AuthService(
     public async Task<Result<RequestOtpResponse>> RequestOtpAsync(RequestOtpRequest request, CancellationToken cancellationToken = default)
     {
         var purpose = NormalizePurpose(request.Purpose);
-        if (purpose is "LOGIN")
+        if (!IsGenericOtpPurposeAllowed(purpose))
         {
-            return Result.Failure<RequestOtpResponse>("otp_login_disabled", "OTP is not supported for normal login.");
+            return Result.Failure<RequestOtpResponse>("invalid_otp_purpose", "OTP purpose is not allowed.");
         }
 
         return await CreateAndSendOtpAsync(request.PhoneNumber, purpose, cancellationToken);
@@ -33,7 +34,13 @@ public sealed class AuthService(
 
     public async Task<Result> VerifyOtpAsync(VerifyOtpRequest request, CancellationToken cancellationToken = default)
     {
-        return await VerifyOtpInternalAsync(request.PhoneNumber, NormalizePurpose(request.Purpose), request.Code, true, cancellationToken);
+        var purpose = NormalizePurpose(request.Purpose);
+        if (!IsGenericOtpPurposeAllowed(purpose))
+        {
+            return Result.Failure("invalid_otp_purpose", "OTP purpose is not allowed.");
+        }
+
+        return await VerifyOtpInternalAsync(request.PhoneNumber, purpose, request.Code, true, cancellationToken);
     }
 
     public async Task<Result<RegisterCustomerResponse>> RegisterCustomerAsync(RegisterCustomerRequest request, CancellationToken cancellationToken = default)
@@ -235,7 +242,7 @@ public sealed class AuthService(
 
     private async Task<Result<string>> CreateOtpAsync(string phoneNumber, string purpose, CancellationToken cancellationToken)
     {
-        var code = Random.Shared.Next(0, 1_000_000).ToString("D6");
+        var code = RandomNumberGenerator.GetInt32(0, 1_000_000).ToString("D6");
         var otp = new OtpCode
         {
             PhoneNumber = phoneNumber,
@@ -325,6 +332,11 @@ public sealed class AuthService(
     private static string NormalizePurpose(string purpose)
     {
         return purpose.Replace(" ", string.Empty, StringComparison.Ordinal).ToUpperInvariant();
+    }
+
+    private static bool IsGenericOtpPurposeAllowed(string purpose)
+    {
+        return purpose is "VERIFYPHONE" or "RESETPASSWORD" or "CHANGEPHONE";
     }
 
     private static string? NormalizeOptional(string? value)
