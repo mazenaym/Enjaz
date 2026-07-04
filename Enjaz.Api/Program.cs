@@ -1,6 +1,7 @@
 using Enjaz.Api.Realtime;
 using Enjaz.BuildingBlocks.Auth;
 using Enjaz.BuildingBlocks.Exceptions;
+using Enjaz.Customers.Endpoints;
 using Enjaz.Identity.Endpoints;
 using FluentValidation.AspNetCore;
 using Hangfire;
@@ -96,6 +97,7 @@ try
 
     builder.Services.AddSignalR();
     builder.Services.AddIdentityModule(builder.Configuration);
+    builder.Services.AddCustomersModule(builder.Configuration);
 
     var app = builder.Build();
 
@@ -119,6 +121,10 @@ try
     app.MapHub<SystemHub>("/hubs/system");
 
     app.Run();
+}
+catch (Microsoft.Extensions.Hosting.HostAbortedException)
+{
+    // EF Core design-time discovery aborts the host after services are resolved.
 }
 catch (Exception exception)
 {

@@ -720,3 +720,236 @@ Npgsql.PostgresException (0x80004005): 28P01: password authentication failed for
     File: auth.c
     Line: 320
     Routine: auth_failed
+2026-07-04 03:55:28.360 +03:00 [INF] Starting Enjaz API.
+2026-07-04 03:55:28.734 +03:00 [INF] Start installing Hangfire SQL objects...
+2026-07-04 03:55:29.242 +03:00 [INF] Hangfire SQL objects installed.
+2026-07-04 03:55:29.339 +03:00 [INF] Starting Hangfire Server using job storage: 'PostgreSQL Server: Host: localhost, DB: enjaz_dev, Schema: hangfire'
+2026-07-04 03:55:29.341 +03:00 [INF] Using the following options for PostgreSQL job storage:
+2026-07-04 03:55:29.342 +03:00 [INF]     Queue poll interval: 00:00:15.
+2026-07-04 03:55:29.343 +03:00 [INF]     Invisibility timeout: 00:30:00.
+2026-07-04 03:55:29.344 +03:00 [INF]     Use sliding invisibility timeout: False.
+2026-07-04 03:55:29.345 +03:00 [INF] Using the following options for Hangfire Server:
+    Worker count: 20
+    Listening queues: 'default'
+    Shutdown timeout: 00:00:15
+    Schedule polling interval: 00:00:15
+2026-07-04 03:55:29.585 +03:00 [INF] Server desktop-natubs0:21036:c4f731ef successfully announced in 230.64 ms
+2026-07-04 03:55:29.589 +03:00 [INF] Server desktop-natubs0:21036:c4f731ef is starting the registered dispatchers: ServerWatchdog, ServerJobCancellationWatcher, ExpirationManager, CountersAggregator, Worker, DelayedJobScheduler, RecurringJobScheduler...
+2026-07-04 03:55:29.594 +03:00 [INF] Server desktop-natubs0:21036:c4f731ef all the dispatchers started
+2026-07-04 03:55:45.273 +03:00 [WRN] Failed to determine the https port for redirect.
+2026-07-04 03:55:45.383 +03:00 [INF] HTTP GET /health responded 200 in 128.0334 ms
+2026-07-04 03:55:45.423 +03:00 [INF] HTTP GET /favicon.ico responded 404 in 3.1781 ms
+2026-07-04 03:55:52.794 +03:00 [INF] HTTP GET /swagger responded 301 in 1.4257 ms
+2026-07-04 03:55:52.838 +03:00 [INF] HTTP GET /swagger/index.html responded 200 in 38.6950 ms
+2026-07-04 03:55:52.864 +03:00 [INF] HTTP GET /swagger/index.js responded 200 in 0.6788 ms
+2026-07-04 03:55:52.872 +03:00 [INF] HTTP GET /swagger/index.css responded 200 in 9.6529 ms
+2026-07-04 03:55:52.879 +03:00 [INF] HTTP GET /swagger/swagger-ui.css responded 200 in 21.5536 ms
+2026-07-04 03:55:52.890 +03:00 [INF] HTTP GET /swagger/swagger-ui-standalone-preset.js responded 200 in 26.3975 ms
+2026-07-04 03:55:52.898 +03:00 [INF] HTTP GET /swagger/swagger-ui-bundle.js responded 200 in 35.4462 ms
+2026-07-04 03:55:53.015 +03:00 [INF] HTTP GET /swagger/favicon-32x32.png responded 200 in 0.9318 ms
+2026-07-04 03:55:53.047 +03:00 [INF] HTTP GET /swagger/v1/swagger.json responded 200 in 51.2352 ms
+2026-07-04 03:55:58.567 +03:00 [INF] HTTP GET /hangfire responded 200 in 141.7126 ms
+2026-07-04 03:55:58.591 +03:00 [INF] HTTP GET /hangfire/css-dark18230545346389 responded 200 in 3.9564 ms
+2026-07-04 03:55:58.595 +03:00 [INF] HTTP GET /hangfire/css182301112220565 responded 200 in 8.5682 ms
+2026-07-04 03:55:58.598 +03:00 [INF] HTTP GET /hangfire/js18230117752156 responded 200 in 11.4743 ms
+2026-07-04 03:55:58.625 +03:00 [INF] HTTP GET /hangfire/fonts/glyphicons-halflings-regular/woff2 responded 200 in 2.4021 ms
+2026-07-04 03:56:00.717 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 39.4109 ms
+2026-07-04 03:56:03.670 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 8.5143 ms
+2026-07-04 03:56:06.668 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 6.7896 ms
+2026-07-04 03:56:09.672 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 7.9524 ms
+2026-07-04 03:56:12.666 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 8.0846 ms
+2026-07-04 03:56:15.673 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 8.0266 ms
+2026-07-04 03:56:18.668 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 5.8087 ms
+2026-07-04 03:56:21.674 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 18.2291 ms
+2026-07-04 03:56:24.670 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 6.0757 ms
+2026-07-04 03:56:27.666 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 6.7970 ms
+2026-07-04 03:56:30.665 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 6.2299 ms
+2026-07-04 03:56:33.660 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 5.8947 ms
+2026-07-04 03:56:36.666 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 6.2608 ms
+2026-07-04 03:56:39.664 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 5.7133 ms
+2026-07-04 03:56:42.673 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 7.6958 ms
+2026-07-04 03:56:45.672 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 7.0696 ms
+2026-07-04 03:56:48.656 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 5.3141 ms
+2026-07-04 03:56:51.663 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 6.0885 ms
+2026-07-04 03:56:54.669 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 5.5025 ms
+2026-07-04 03:56:57.669 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 5.9883 ms
+2026-07-04 03:57:00.669 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 5.2670 ms
+2026-07-04 03:57:03.665 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 5.9140 ms
+2026-07-04 03:57:06.673 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 15.1282 ms
+2026-07-04 03:57:09.671 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 6.3704 ms
+2026-07-04 03:57:12.664 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 7.7654 ms
+2026-07-04 03:57:15.669 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 10.5474 ms
+2026-07-04 03:57:18.672 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 7.2155 ms
+2026-07-04 03:57:21.678 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 10.0598 ms
+2026-07-04 03:57:24.670 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 6.1815 ms
+2026-07-04 03:57:27.670 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 6.1614 ms
+2026-07-04 03:57:30.668 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 6.1408 ms
+2026-07-04 03:57:33.665 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 5.0728 ms
+2026-07-04 03:57:36.666 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 5.8807 ms
+2026-07-04 03:57:39.668 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 5.0332 ms
+2026-07-04 03:57:42.671 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 6.3551 ms
+2026-07-04 03:57:45.662 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 8.3978 ms
+2026-07-04 03:57:48.669 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 6.0122 ms
+2026-07-04 03:57:51.673 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 6.4065 ms
+2026-07-04 03:57:54.663 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 5.3346 ms
+2026-07-04 03:57:57.661 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 5.0097 ms
+2026-07-04 03:58:00.671 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 6.1467 ms
+2026-07-04 03:58:03.666 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 4.3870 ms
+2026-07-04 03:58:06.673 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 7.2941 ms
+2026-07-04 03:58:09.666 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 8.8798 ms
+2026-07-04 03:58:12.662 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 4.6830 ms
+2026-07-04 03:58:15.669 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 5.4468 ms
+2026-07-04 03:58:18.670 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 6.0755 ms
+2026-07-04 03:58:21.670 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 4.7274 ms
+2026-07-04 03:58:24.662 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 5.4346 ms
+2026-07-04 03:58:27.661 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 5.2375 ms
+2026-07-04 03:58:30.660 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 6.7300 ms
+2026-07-04 03:58:33.672 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 7.7712 ms
+2026-07-04 03:58:36.668 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 6.1613 ms
+2026-07-04 03:58:39.658 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 5.0152 ms
+2026-07-04 03:58:42.670 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 5.5155 ms
+2026-07-04 03:58:45.665 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 5.9618 ms
+2026-07-04 03:58:48.665 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 9.0977 ms
+2026-07-04 03:58:51.669 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 5.0150 ms
+2026-07-04 03:58:54.658 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 4.9773 ms
+2026-07-04 03:58:57.668 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 5.1686 ms
+2026-07-04 03:59:00.671 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 5.1014 ms
+2026-07-04 03:59:03.669 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 4.6671 ms
+2026-07-04 03:59:06.672 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 6.3523 ms
+2026-07-04 03:59:09.667 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 8.3433 ms
+2026-07-04 03:59:12.664 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 4.9299 ms
+2026-07-04 03:59:15.657 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 4.4010 ms
+2026-07-04 03:59:18.659 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 5.7488 ms
+2026-07-04 03:59:21.670 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 4.9220 ms
+2026-07-04 03:59:24.669 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 7.7361 ms
+2026-07-04 03:59:27.671 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 9.2481 ms
+2026-07-04 03:59:30.670 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 5.7132 ms
+2026-07-04 03:59:33.663 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 5.1739 ms
+2026-07-04 03:59:36.666 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 5.6141 ms
+2026-07-04 03:59:39.666 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 4.5381 ms
+2026-07-04 03:59:42.666 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 6.7776 ms
+2026-07-04 03:59:45.658 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 5.7054 ms
+2026-07-04 03:59:48.663 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 4.8418 ms
+2026-07-04 03:59:51.669 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 4.7291 ms
+2026-07-04 03:59:54.671 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 6.1070 ms
+2026-07-04 03:59:57.668 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 4.9416 ms
+2026-07-04 04:00:00.665 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 4.5843 ms
+2026-07-04 04:00:03.662 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 5.3191 ms
+2026-07-04 04:00:06.666 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 6.8154 ms
+2026-07-04 04:00:09.662 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 4.2322 ms
+2026-07-04 04:00:12.664 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 4.8226 ms
+2026-07-04 04:00:15.661 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 4.7127 ms
+2026-07-04 04:00:18.673 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 7.7505 ms
+2026-07-04 04:00:21.662 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 4.4553 ms
+2026-07-04 04:00:24.660 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 6.2613 ms
+2026-07-04 04:00:27.659 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 5.5122 ms
+2026-07-04 04:00:30.663 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 8.0803 ms
+2026-07-04 04:00:33.661 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 5.6758 ms
+2026-07-04 04:00:36.669 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 9.7058 ms
+2026-07-04 04:00:39.664 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 5.8612 ms
+2026-07-04 04:00:42.667 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 6.4563 ms
+2026-07-04 04:00:45.662 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 6.5312 ms
+2026-07-04 04:00:48.670 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 10.5779 ms
+2026-07-04 04:00:51.659 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 5.2315 ms
+2026-07-04 04:00:54.661 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 8.1223 ms
+2026-07-04 04:00:57.660 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 4.6812 ms
+2026-07-04 04:01:00.671 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 8.2727 ms
+2026-07-04 04:01:03.657 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 4.8686 ms
+2026-07-04 04:01:06.666 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 6.3953 ms
+2026-07-04 04:01:09.669 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 5.1168 ms
+2026-07-04 04:01:12.673 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 8.3687 ms
+2026-07-04 04:01:15.671 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 7.4009 ms
+2026-07-04 04:01:18.665 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 9.0798 ms
+2026-07-04 04:01:21.669 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 7.3529 ms
+2026-07-04 04:01:24.672 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 6.1367 ms
+2026-07-04 04:01:27.670 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 5.9364 ms
+2026-07-04 04:01:30.661 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 6.4086 ms
+2026-07-04 04:01:33.666 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 8.3766 ms
+2026-07-04 04:01:36.656 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 4.4388 ms
+2026-07-04 04:01:39.668 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 7.2211 ms
+2026-07-04 04:01:42.665 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 4.9713 ms
+2026-07-04 04:01:45.666 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 7.0239 ms
+2026-07-04 04:01:48.667 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 8.0733 ms
+2026-07-04 04:01:51.658 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 5.6671 ms
+2026-07-04 04:01:54.660 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 5.1718 ms
+2026-07-04 04:01:57.664 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 4.4130 ms
+2026-07-04 04:02:00.660 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 6.9079 ms
+2026-07-04 04:02:03.667 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 6.9582 ms
+2026-07-04 04:02:06.665 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 7.8502 ms
+2026-07-04 04:02:09.657 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 6.3962 ms
+2026-07-04 04:02:12.669 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 6.5568 ms
+2026-07-04 04:02:15.663 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 4.4418 ms
+2026-07-04 04:02:18.661 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 5.2852 ms
+2026-07-04 04:02:21.663 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 4.7573 ms
+2026-07-04 04:02:24.665 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 5.2956 ms
+2026-07-04 04:02:27.665 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 5.5110 ms
+2026-07-04 04:02:30.672 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 7.0695 ms
+2026-07-04 04:02:33.663 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 8.2352 ms
+2026-07-04 04:02:36.667 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 7.7868 ms
+2026-07-04 04:02:39.662 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 6.1217 ms
+2026-07-04 04:02:42.666 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 5.2369 ms
+2026-07-04 04:02:45.658 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 5.9641 ms
+2026-07-04 04:02:48.674 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 8.1857 ms
+2026-07-04 04:02:51.669 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 6.1370 ms
+2026-07-04 04:02:54.671 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 7.2100 ms
+2026-07-04 04:02:57.665 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 5.4773 ms
+2026-07-04 04:03:00.670 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 8.9523 ms
+2026-07-04 04:03:03.660 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 4.4585 ms
+2026-07-04 04:03:06.656 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 4.9009 ms
+2026-07-04 04:03:09.660 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 6.8957 ms
+2026-07-04 04:03:12.665 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 7.0897 ms
+2026-07-04 04:03:15.663 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 5.2364 ms
+2026-07-04 04:03:18.674 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 8.1229 ms
+2026-07-04 04:03:21.672 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 9.4787 ms
+2026-07-04 04:03:24.668 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 5.2251 ms
+2026-07-04 04:03:27.672 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 9.1182 ms
+2026-07-04 04:03:30.670 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 5.5281 ms
+2026-07-04 04:03:33.665 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 5.3080 ms
+2026-07-04 04:03:36.665 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 6.4158 ms
+2026-07-04 04:03:39.666 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 5.3670 ms
+2026-07-04 04:03:42.664 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 9.9075 ms
+2026-07-04 04:03:45.670 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 7.9191 ms
+2026-07-04 04:03:48.669 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 6.4686 ms
+2026-07-04 04:03:51.676 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 8.3753 ms
+2026-07-04 04:03:54.667 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 4.6184 ms
+2026-07-04 04:03:57.658 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 6.0140 ms
+2026-07-04 04:04:00.660 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 4.7483 ms
+2026-07-04 04:04:03.664 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 4.7213 ms
+2026-07-04 04:04:06.666 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 4.6836 ms
+2026-07-04 04:04:09.660 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 6.2890 ms
+2026-07-04 04:04:12.668 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 6.7891 ms
+2026-07-04 04:04:15.666 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 4.5197 ms
+2026-07-04 04:04:18.662 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 6.7643 ms
+2026-07-04 04:04:21.663 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 4.9390 ms
+2026-07-04 04:04:24.674 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 7.2225 ms
+2026-07-04 04:04:27.832 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 11.5665 ms
+2026-07-04 04:04:30.765 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 84.7362 ms
+2026-07-04 04:04:33.663 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 5.1443 ms
+2026-07-04 04:04:36.661 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 6.6709 ms
+2026-07-04 04:04:39.668 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 5.5245 ms
+2026-07-04 04:04:42.673 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 6.5834 ms
+2026-07-04 04:04:45.668 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 4.9823 ms
+2026-07-04 04:04:48.658 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 5.6766 ms
+2026-07-04 04:04:51.661 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 6.0837 ms
+2026-07-04 04:04:54.668 +03:00 [INF] HTTP POST /hangfire/stats responded 200 in 6.7300 ms
+2026-07-04 04:07:57.948 +03:00 [INF] Starting Enjaz API.
+2026-07-04 04:07:58.527 +03:00 [FTL] Enjaz API terminated unexpectedly.
+Microsoft.Extensions.Hosting.HostAbortedException: The host was aborted.
+   at Microsoft.Extensions.Hosting.HostFactoryResolver.HostingListener.ThrowHostAborted()
+   at Microsoft.Extensions.Hosting.HostFactoryResolver.HostingListener.OnNext(KeyValuePair`2 value)
+   at System.Diagnostics.DiagnosticListener.Write(String name, Object value)
+   at Microsoft.Extensions.Hosting.HostBuilder.ResolveHost(IServiceProvider serviceProvider, DiagnosticListener diagnosticListener)
+   at Microsoft.Extensions.Hosting.HostApplicationBuilder.Build()
+   at Microsoft.AspNetCore.Builder.WebApplicationBuilder.Build()
+   at Program.<Main>$(String[] args) in E:\Projects\Enjaz\src\Enjaz.Api\Program.cs:line 102
+2026-07-04 04:08:13.685 +03:00 [INF] Starting Enjaz API.
+2026-07-04 04:08:14.234 +03:00 [FTL] Enjaz API terminated unexpectedly.
+Microsoft.Extensions.Hosting.HostAbortedException: The host was aborted.
+   at Microsoft.Extensions.Hosting.HostFactoryResolver.HostingListener.ThrowHostAborted()
+   at Microsoft.Extensions.Hosting.HostFactoryResolver.HostingListener.OnNext(KeyValuePair`2 value)
+   at System.Diagnostics.DiagnosticListener.Write(String name, Object value)
+   at Microsoft.Extensions.Hosting.HostBuilder.ResolveHost(IServiceProvider serviceProvider, DiagnosticListener diagnosticListener)
+   at Microsoft.Extensions.Hosting.HostApplicationBuilder.Build()
+   at Microsoft.AspNetCore.Builder.WebApplicationBuilder.Build()
+   at Program.<Main>$(String[] args) in E:\Projects\Enjaz\src\Enjaz.Api\Program.cs:line 102
+2026-07-04 04:09:35.927 +03:00 [INF] Starting Enjaz API.
