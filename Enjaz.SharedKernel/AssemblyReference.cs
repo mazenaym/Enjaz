@@ -1,6 +1,8 @@
-﻿namespace Enjaz.SharedKernel;
+using System.Reflection;
 
-public class AssemblyReference
+namespace Enjaz.SharedKernel;
+
+public static class AssemblyReference
 {
-
+    public static readonly Assembly Assembly = typeof(AssemblyReference).Assembly;
 }

@@ -1,6 +1,8 @@
-﻿namespace Enjaz.Notifications.Infrastructure;
+using System.Reflection;
 
-public class AssemblyReference
+namespace Enjaz.Notifications.Infrastructure;
+
+public static class AssemblyReference
 {
-
+    public static readonly Assembly Assembly = typeof(AssemblyReference).Assembly;
 }

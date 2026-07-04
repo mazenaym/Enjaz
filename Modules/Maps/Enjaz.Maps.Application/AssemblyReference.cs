@@ -1,6 +1,8 @@
-﻿namespace Enjaz.Maps.Application;
+using System.Reflection;
 
-public class AssemblyReference
+namespace Enjaz.Maps.Application;
+
+public static class AssemblyReference
 {
-
+    public static readonly Assembly Assembly = typeof(AssemblyReference).Assembly;
 }

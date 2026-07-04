@@ -1,6 +1,8 @@
-﻿namespace Enjaz.Technicians.Endpoints;
+using System.Reflection;
 
-public class AssemblyReference
+namespace Enjaz.Technicians.Endpoints;
+
+public static class AssemblyReference
 {
-
+    public static readonly Assembly Assembly = typeof(AssemblyReference).Assembly;
 }

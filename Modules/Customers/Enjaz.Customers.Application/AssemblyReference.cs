@@ -1,6 +1,8 @@
-﻿namespace Enjaz.Customers.Application;
+using System.Reflection;
 
-public class AssemblyReference
+namespace Enjaz.Customers.Application;
+
+public static class AssemblyReference
 {
-
+    public static readonly Assembly Assembly = typeof(AssemblyReference).Assembly;
 }

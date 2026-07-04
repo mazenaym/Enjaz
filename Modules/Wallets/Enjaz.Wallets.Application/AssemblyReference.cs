@@ -1,6 +1,8 @@
-﻿namespace Enjaz.Wallets.Application;
+using System.Reflection;
 
-public class AssemblyReference
+namespace Enjaz.Wallets.Application;
+
+public static class AssemblyReference
 {
-
+    public static readonly Assembly Assembly = typeof(AssemblyReference).Assembly;
 }

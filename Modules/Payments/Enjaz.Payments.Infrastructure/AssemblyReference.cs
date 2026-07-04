@@ -1,6 +1,8 @@
-﻿namespace Enjaz.Payments.Infrastructure;
+using System.Reflection;
 
-public class AssemblyReference
+namespace Enjaz.Payments.Infrastructure;
+
+public static class AssemblyReference
 {
-
+    public static readonly Assembly Assembly = typeof(AssemblyReference).Assembly;
 }
