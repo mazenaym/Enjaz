@@ -4,6 +4,8 @@ using Enjaz.BuildingBlocks.Exceptions;
 using Enjaz.Catalog.Endpoints;
 using Enjaz.Customers.Endpoints;
 using Enjaz.Identity.Endpoints;
+using Enjaz.Maps.Endpoints;
+using Enjaz.Maps.Endpoints.Realtime;
 using Enjaz.Technicians.Endpoints;
 using FluentValidation.AspNetCore;
 using Hangfire;
@@ -102,6 +104,7 @@ try
     builder.Services.AddCustomersModule(builder.Configuration);
     builder.Services.AddCatalogModule(builder.Configuration);
     builder.Services.AddTechniciansModule(builder.Configuration);
+    builder.Services.AddMapsModule(builder.Configuration);
 
     var app = builder.Build();
 
@@ -123,6 +126,7 @@ try
     app.MapControllers();
     app.MapHealthChecks("/health");
     app.MapHub<SystemHub>("/hubs/system");
+    app.MapHub<TrackingHub>("/hubs/tracking");
 
     app.Run();
 }

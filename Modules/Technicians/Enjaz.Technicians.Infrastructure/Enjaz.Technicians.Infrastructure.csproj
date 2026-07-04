@@ -21,6 +21,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Enjaz.Technicians.Application\Enjaz.Technicians.Application.csproj" />
     <ProjectReference Include="..\Enjaz.Technicians.Domain\Enjaz.Technicians.Domain.csproj" />
+    <ProjectReference Include="..\..\Maps\Enjaz.Maps.Application\Enjaz.Maps.Application.csproj" />
   </ItemGroup>
 
 </Project>

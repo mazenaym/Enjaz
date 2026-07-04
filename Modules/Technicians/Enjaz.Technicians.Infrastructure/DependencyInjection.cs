@@ -1,4 +1,5 @@
 using Enjaz.Technicians.Application.Technicians;
+using Enjaz.Maps.Application.Maps;
 using Enjaz.Technicians.Infrastructure.Persistence;
 using Enjaz.Technicians.Infrastructure.Technicians;
 using Microsoft.EntityFrameworkCore;
@@ -20,6 +21,7 @@ public static class DependencyInjection
                 npgsqlOptions => npgsqlOptions.UseNetTopologySuite()));
 
         services.AddScoped<ITechniciansRepository, TechniciansRepository>();
+        services.AddScoped<ITechnicianLookupService, TechnicianLookupService>();
 
         return services;
     }
